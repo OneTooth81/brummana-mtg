@@ -29,7 +29,7 @@ function fmtDate(iso) {
   return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
-export default function MemberCard({ member: m, session, onEdit, onDelete, onHistory }) {
+export default function MemberCard({ member: m, session, canEdit, onEdit, onDelete, onHistory }) {
   const age = calcAge(m.dob)
   return (
     <div className="bg-white rounded-xl border border-stone-200 p-4 flex items-start justify-between gap-3">
@@ -59,8 +59,8 @@ export default function MemberCard({ member: m, session, onEdit, onDelete, onHis
       </div>
       <div className="flex gap-1 shrink-0">
         <button onClick={onHistory} className="p-2 rounded-lg hover:bg-stone-100 text-stone-500" title="Edit history"><History size={16} /></button>
-        <button onClick={onEdit} className="p-2 rounded-lg hover:bg-stone-100 text-stone-500"><Pencil size={16} /></button>
-        <button onClick={onDelete} className="p-2 rounded-lg hover:bg-red-50 text-red-500"><Trash2 size={16} /></button>
+        {canEdit && <button onClick={onEdit} className="p-2 rounded-lg hover:bg-stone-100 text-stone-500"><Pencil size={16} /></button>}
+        {canEdit && <button onClick={onDelete} className="p-2 rounded-lg hover:bg-red-50 text-red-500"><Trash2 size={16} /></button>}
       </div>
     </div>
   )
