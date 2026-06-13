@@ -4,7 +4,7 @@ import MemberForm from './MemberForm'
 import MemberCard from './MemberCard'
 import HistoryModal from './HistoryModal'
 import { Users, Search, Plus, Download, ArrowLeft, MessageCircle, Eye } from 'lucide-react'
-import { GENERATIONS } from '../App'
+import { GENERATIONS } from '../constants'
 
 function normPhone(p) { return (p || '').replace(/\D/g, '') }
 function fmtDate(iso) {

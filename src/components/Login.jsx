@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import { Lock, User, AlertCircle } from 'lucide-react'
-import { ADMIN } from '../App'
+import { ADMIN } from '../constants'
 
 export default function Login({ onLogin }) {
   const [users, setUsers] = useState([])

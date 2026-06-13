@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import { UserPlus, User, Trash2, Plus, AlertCircle, Shield } from 'lucide-react'
-import { ADMIN } from '../App'
+import { ADMIN } from '../constants'
 
 const MODULES = ['members', 'accounts']
 const LEVELS = ['none', 'view', 'edit']

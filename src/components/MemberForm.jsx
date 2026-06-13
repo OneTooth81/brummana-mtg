@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { X, Save, MessageCircle, AlertCircle } from 'lucide-react'
-import { GENERATIONS, RESIDENCES } from '../App'
+import { GENERATIONS, RESIDENCES } from '../constants'
 
 function calcAge(dob) {
   if (!dob) return null

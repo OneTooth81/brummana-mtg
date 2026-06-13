@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import { X, History, CheckCircle, RotateCcw, AlertCircle } from 'lucide-react'
-import { ADMIN } from '../App'
+import { ADMIN } from '../constants'
 
 function fmtDate(iso) {
   if (!iso) return ''

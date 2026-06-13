@@ -5,12 +5,7 @@ import Landing from './components/Landing'
 import MembersModule from './components/MembersModule'
 import AccountsModule from './components/AccountsModule'
 import ManageUsers from './components/ManageUsers'
-
-export const ADMIN = 'Najib.A'
-export const GENERATIONS = ['Youth', 'Adult', 'Senior']
-export const RESIDENCES = ['Brummana', 'Roumieh', 'Baabdat', 'Beit Meri']
-export const INCOME_CATEGORIES = ['Donations', 'Membership Fees', 'Events', 'Other']
-export const EXPENSE_CATEGORIES = ['Printing', 'Events', 'Transport', 'Office', 'Other']
+import { ADMIN } from './constants'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -38,13 +33,11 @@ export default function App() {
     setScreen('login')
   }
 
-  const nav = (s) => setScreen(s)
-
   if (screen === 'login') return <Login onLogin={handleLogin} />
-  if (screen === 'landing') return <Landing session={session} permissions={permissions} onNavigate={nav} onSignOut={handleSignOut} />
-  if (screen === 'members') return <MembersModule session={session} permissions={permissions} onBack={() => nav('landing')} />
-  if (screen === 'accounts') return <AccountsModule session={session} permissions={permissions} onBack={() => nav('landing')} />
-  if (screen === 'manage') return <ManageUsers session={session} onBack={() => nav('landing')} />
+  if (screen === 'landing') return <Landing session={session} permissions={permissions} onNavigate={setScreen} onSignOut={handleSignOut} />
+  if (screen === 'members') return <MembersModule session={session} permissions={permissions} onBack={() => setScreen('landing')} />
+  if (screen === 'accounts') return <AccountsModule session={session} permissions={permissions} onBack={() => setScreen('landing')} />
+  if (screen === 'manage') return <ManageUsers session={session} onBack={() => setScreen('landing')} />
 
   return null
 }

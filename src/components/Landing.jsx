@@ -1,5 +1,5 @@
 import { Users, BookOpen, LogOut, UserPlus, Eye, Settings } from 'lucide-react'
-import { ADMIN } from '../App'
+import { ADMIN } from '../constants'
 
 const MODULES = [
   {

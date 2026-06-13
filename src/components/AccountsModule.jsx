@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../supabase'
 import { ArrowLeft, Plus, Download, Search, TrendingUp, TrendingDown, DollarSign, Eye, Pencil, Trash2, X, Save, AlertCircle, History, RotateCcw, CheckCircle } from 'lucide-react'
-import { ADMIN, INCOME_CATEGORIES, EXPENSE_CATEGORIES } from '../App'
+import { ADMIN, INCOME_CATEGORIES, EXPENSE_CATEGORIES } from '../constants'
 
 function fmt(n, decimals = 2) { return Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) }
 function fmtDate(iso) {
