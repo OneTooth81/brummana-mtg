@@ -343,6 +343,7 @@ export default function AccountsModule({ session, permissions, onBack }) {
   }, [transactions, eventFilter])
 
   async function saveTx(form, editingId) {
+    const payload = { ...form, event_id: form.event_id || null }
     if (editingId) {
       const existing = transactions.find(t => t.id === editingId)
       if (existing) {
@@ -351,10 +352,10 @@ export default function AccountsModule({ session, permissions, onBack }) {
         if (hist && hist.length >= 2) await supabase.from('transaction_history').delete().eq('id', hist[hist.length - 1].id)
         await supabase.from('transaction_history').insert(snap)
       }
-      const { error } = await supabase.from('transactions').update({ ...form, last_edited_by: session.username, last_edited_at: new Date().toISOString() }).eq('id', editingId)
+      const { error } = await supabase.from('transactions').update({ ...payload, last_edited_by: session.username, last_edited_at: new Date().toISOString() }).eq('id', editingId)
       if (error) return { error: error.message }
     } else {
-      const { error } = await supabase.from('transactions').insert({ ...form, created_by: session.username, created_at: new Date().toISOString() })
+      const { error } = await supabase.from('transactions').insert({ ...payload, created_by: session.username, created_at: new Date().toISOString() })
       if (error) return { error: error.message }
     }
     await supabase.from('app_settings').upsert({ key: 'exchange_rate', value: String(form.exchange_rate) }, { onConflict: 'key' })
