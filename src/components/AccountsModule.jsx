@@ -160,14 +160,14 @@ function ManageModal({ incomeCategories, setIncomeCategories, expenseCategories,
 }
 
 // ── Transaction Form ──────────────────────────────────────────────────────────
-function TxForm({ tx, incomeCategories, expenseCategories, events, onSave, onClose }) {
+function TxForm({ tx, incomeCategories, expenseCategories, events, lastRate, onSave, onClose }) {
   const [form, setForm] = useState(tx ? {
     type: tx.type, category: tx.category, event_id: tx.event_id || '',
     description: tx.description || '', amount_usd: tx.amount_usd,
     exchange_rate: tx.exchange_rate, transaction_date: tx.transaction_date, receipt_ref: tx.receipt_ref || ''
   } : {
     type: 'income', category: incomeCategories[0], event_id: '',
-    description: '', amount_usd: '', exchange_rate: '',
+    description: '', amount_usd: '', exchange_rate: lastRate || '',
     transaction_date: new Date().toISOString().split('T')[0], receipt_ref: ''
   })
   const [error, setError] = useState('')
@@ -295,6 +295,7 @@ export default function AccountsModule({ session, permissions, onBack }) {
   const [events, setEvents] = useState([])
   const [incomeCategories, setIncomeCategories] = useState([...INCOME_CATEGORIES])
   const [expenseCategories, setExpenseCategories] = useState([...EXPENSE_CATEGORIES])
+  const [lastRate, setLastRate] = useState('')
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('All')
@@ -318,8 +319,10 @@ export default function AccountsModule({ session, permissions, onBack }) {
     if (settings) {
       const inc = settings.find(s => s.key === 'income_categories')
       const exp = settings.find(s => s.key === 'expense_categories')
+      const rate = settings.find(s => s.key === 'exchange_rate')
       if (inc) setIncomeCategories(JSON.parse(inc.value))
       if (exp) setExpenseCategories(JSON.parse(exp.value))
+      if (rate) setLastRate(rate.value)
     }
     setLoading(false)
   }
@@ -354,6 +357,7 @@ export default function AccountsModule({ session, permissions, onBack }) {
       const { error } = await supabase.from('transactions').insert({ ...form, created_by: session.username, created_at: new Date().toISOString() })
       if (error) return { error: error.message }
     }
+    await supabase.from('app_settings').upsert({ key: 'exchange_rate', value: String(form.exchange_rate) }, { onConflict: 'key' })
     await fetchAll()
     return { error: null }
   }
@@ -493,7 +497,7 @@ export default function AccountsModule({ session, permissions, onBack }) {
       </div>
 
       {showManage && canEdit && <ManageModal incomeCategories={incomeCategories} setIncomeCategories={setIncomeCategories} expenseCategories={expenseCategories} setExpenseCategories={setExpenseCategories} events={events} setEvents={setEvents} onClose={() => setShowManage(false)} />}
-      {showForm && canEdit && <TxForm tx={editingTx} incomeCategories={incomeCategories} expenseCategories={expenseCategories} events={events} onSave={async form => { const res = await saveTx(form, editingTx?.id); if (!res?.error) setShowForm(false); return res }} onClose={() => { setShowForm(false); setEditingTx(null) }} />}
+      {showForm && canEdit && <TxForm tx={editingTx} lastRate={lastRate} incomeCategories={incomeCategories} expenseCategories={expenseCategories} events={events} onSave={async form => { const res = await saveTx(form, editingTx?.id); if (!res?.error) setShowForm(false); return res }} onClose={() => { setShowForm(false); setEditingTx(null) }} />}
       {historyTx && <HistoryPanel tx={historyTx} session={session} onRollback={rollbackTo} onClose={() => setHistoryTx(null)} />}
     </div>
   )
