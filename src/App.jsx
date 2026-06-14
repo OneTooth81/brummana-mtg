@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { supabase } from './supabase'
 import Login from './components/Login'
 import Landing from './components/Landing'
 import MembersModule from './components/MembersModule'
 import AccountsModule from './components/AccountsModule'
+import ReportsModule from './components/ReportsModule'
 import ManageUsers from './components/ManageUsers'
 import { ADMIN } from './constants'
 
@@ -33,11 +34,12 @@ export default function App() {
     setScreen('login')
   }
 
-  if (screen === 'login') return <Login onLogin={handleLogin} />
+  if (screen === 'login')   return <Login onLogin={handleLogin} />
   if (screen === 'landing') return <Landing session={session} permissions={permissions} onNavigate={setScreen} onSignOut={handleSignOut} />
   if (screen === 'members') return <MembersModule session={session} permissions={permissions} onBack={() => setScreen('landing')} />
   if (screen === 'accounts') return <AccountsModule session={session} permissions={permissions} onBack={() => setScreen('landing')} />
-  if (screen === 'manage') return <ManageUsers session={session} onBack={() => setScreen('landing')} />
+  if (screen === 'reports') return <ReportsModule session={session} permissions={permissions} onBack={() => setScreen('landing')} />
+  if (screen === 'manage')  return <ManageUsers session={session} onBack={() => setScreen('landing')} />
 
   return null
 }
