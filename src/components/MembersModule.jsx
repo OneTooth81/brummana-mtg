@@ -3,8 +3,9 @@ import { supabase } from '../supabase'
 import MemberForm from './MemberForm'
 import MemberCard from './MemberCard'
 import HistoryModal from './HistoryModal'
-import { Users, Search, Plus, Download, ArrowLeft, MessageCircle, Eye } from 'lucide-react'
-import { GENERATIONS, RESIDENCES } from '../constants'
+import BulkImportModal from './BulkImportModal'
+import { Users, Search, Plus, Download, ArrowLeft, MessageCircle, Eye, Upload } from 'lucide-react'
+import { GENERATIONS, RESIDENCES, ADMIN } from '../constants'
 
 function normPhone(p) { return (p || '').replace(/\D/g, '') }
 function fmtDate(iso) {
@@ -25,6 +26,7 @@ export default function MembersModule({ session, permissions, onBack }) {
   const [editingMember, setEditingMember] = useState(null)
   const [historyMember, setHistoryMember] = useState(null)
   const [residences, setResidences] = useState([...RESIDENCES])
+  const [showImport, setShowImport] = useState(false)
 
   useEffect(() => {
     fetchMembers()
@@ -83,6 +85,21 @@ export default function MembersModule({ session, permissions, onBack }) {
     }
     await fetchMembers()
     return { error: null }
+  }
+
+  async function bulkSaveMembers(rows) {
+    let imported = 0, skipped = 0, duplicates = 0
+    for (const form of rows) {
+      if (form.phone) {
+        const digits = normPhone(form.phone)
+        const clash = members.find(m => normPhone(m.phone) === digits)
+        if (clash) { duplicates++; continue }
+      }
+      const { error } = await supabase.from('members').insert({ ...form, created_by: session.username, created_at: new Date().toISOString() })
+      if (error) skipped++; else imported++
+    }
+    await fetchMembers()
+    return { imported, skipped, duplicates }
   }
 
   async function deleteMember(id) {
@@ -147,7 +164,10 @@ export default function MembersModule({ session, permissions, onBack }) {
 
         <div className="flex items-center justify-between gap-3 mb-3">
           <h2 className="text-sm font-semibold text-stone-500">{counts.total} member{counts.total !== 1 ? 's' : ''}</h2>
-          {canEdit && <button onClick={() => { setEditingMember(null); setShowForm(true) }} className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-teal-700 text-white font-medium hover:bg-teal-800 shadow-sm"><Plus size={18} /> Add member</button>}
+          <div className="flex gap-2">
+            {session.username === ADMIN && <button onClick={() => setShowImport(true)} className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg border border-stone-300 bg-white text-stone-700 font-medium hover:bg-stone-50 shadow-sm text-sm"><Upload size={16} /> Import</button>}
+            {canEdit && <button onClick={() => { setEditingMember(null); setShowForm(true) }} className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-teal-700 text-white font-medium hover:bg-teal-800 shadow-sm"><Plus size={18} /> Add member</button>}
+          </div>
         </div>
         <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 mb-4">
           <div className="relative flex-1">
@@ -186,6 +206,7 @@ export default function MembersModule({ session, permissions, onBack }) {
 
       {showForm && canEdit && <MemberForm member={editingMember} residences={residences} setResidences={setResidences} onSave={async form => { const res = await saveMember(form, editingMember?.id); if (!res.error) setShowForm(false); return res }} onClose={() => setShowForm(false)} />}
       {historyMember && <HistoryModal member={historyMember} session={session} onRollback={rollbackTo} onClose={() => setHistoryMember(null)} />}
+      {showImport && session.username === ADMIN && <BulkImportModal onImport={bulkSaveMembers} onClose={() => setShowImport(false)} />}
     </div>
   )
 }
