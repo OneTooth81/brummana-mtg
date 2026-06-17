@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { X, Save, MessageCircle, AlertCircle } from 'lucide-react'
-import { GENERATIONS, RESIDENCES } from '../constants'
+import { GENERATIONS } from '../constants'
+import { supabase } from '../supabase'
 
 function calcAge(dob) {
   if (!dob) return null
@@ -13,7 +14,7 @@ function calcAge(dob) {
   return age >= 0 ? age : null
 }
 
-export default function MemberForm({ member, onSave, onClose }) {
+export default function MemberForm({ member, residences, setResidences, onSave, onClose }) {
   const [form, setForm] = useState({
     name: member?.name || '',
     phone: member?.phone || '',
@@ -27,6 +28,9 @@ export default function MemberForm({ member, onSave, onClose }) {
   })
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [showAddRes, setShowAddRes] = useState(false)
+  const [newRes, setNewRes] = useState('')
+  const [resErr, setResErr] = useState('')
 
   async function handleSave() {
     setError('')
@@ -41,6 +45,17 @@ export default function MemberForm({ member, onSave, onClose }) {
   }
 
   const f = (key, val) => setForm(p => ({ ...p, [key]: val }))
+
+  async function addResidence() {
+    const val = newRes.trim()
+    if (!val) { setResErr('Enter a name.'); return }
+    if (residences.map(r => r.toLowerCase()).includes(val.toLowerCase())) { setResErr('Already exists.'); return }
+    const sorted = [...residences, val].sort((a, b) => a.localeCompare(b))
+    setResidences(sorted)
+    f('residence', val)
+    await supabase.from('app_settings').upsert({ key: 'residences', value: JSON.stringify(sorted) }, { onConflict: 'key' })
+    setNewRes(''); setResErr(''); setShowAddRes(false)
+  }
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50">
@@ -59,9 +74,19 @@ export default function MemberForm({ member, onSave, onClose }) {
           <div><label className="text-sm font-medium text-stone-600">Occupation</label>
             <input value={form.occupation} onChange={e => f('occupation', e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-teal-500" placeholder="e.g. Teacher, Student, Retired" /></div>
           <div><label className="text-sm font-medium text-stone-600">Residence</label>
-            <select value={form.residence} onChange={e => f('residence', e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500">
-              {RESIDENCES.map(r => <option key={r} value={r}>{r}</option>)}
-            </select></div>
+            <select value={form.residence} onChange={e => e.target.value === '__add__' ? setShowAddRes(true) : f('residence', e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500">
+              {[...residences].sort((a, b) => a.localeCompare(b)).map(r => <option key={r} value={r}>{r}</option>)}
+              <option value="__add__">＋ Add new residence…</option>
+            </select>
+            {showAddRes && (
+              <div className="flex gap-2 mt-2">
+                <input value={newRes} onChange={e => { setNewRes(e.target.value); setResErr('') }} onKeyDown={e => e.key === 'Enter' && addResidence()} placeholder="New residence name…" className="flex-1 px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm" autoFocus />
+                <button onClick={addResidence} className="px-3 py-2 rounded-lg bg-teal-700 text-white text-sm font-medium hover:bg-teal-800">Add</button>
+                <button onClick={() => { setShowAddRes(false); setNewRes(''); setResErr('') }} className="px-3 py-2 rounded-lg border border-stone-300 text-stone-600 text-sm hover:bg-stone-50">✕</button>
+              </div>
+            )}
+            {resErr && <p className="text-xs text-red-600 mt-1">{resErr}</p>}
+          </div>
           <div><label className="text-sm font-medium text-stone-600">Date of birth</label>
             <input type="date" value={form.dob} onChange={e => f('dob', e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-teal-500" />
             {calcAge(form.dob) !== null && <p className="text-xs text-stone-400 mt-1">Age: {calcAge(form.dob)}</p>}</div>

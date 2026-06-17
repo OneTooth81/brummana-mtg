@@ -4,7 +4,7 @@ import MemberForm from './MemberForm'
 import MemberCard from './MemberCard'
 import HistoryModal from './HistoryModal'
 import { Users, Search, Plus, Download, ArrowLeft, MessageCircle, Eye } from 'lucide-react'
-import { GENERATIONS } from '../constants'
+import { GENERATIONS, RESIDENCES } from '../constants'
 
 function normPhone(p) { return (p || '').replace(/\D/g, '') }
 function fmtDate(iso) {
@@ -24,8 +24,13 @@ export default function MembersModule({ session, permissions, onBack }) {
   const [showForm, setShowForm] = useState(false)
   const [editingMember, setEditingMember] = useState(null)
   const [historyMember, setHistoryMember] = useState(null)
+  const [residences, setResidences] = useState([...RESIDENCES])
 
-  useEffect(() => { fetchMembers() }, [])
+  useEffect(() => {
+    fetchMembers()
+    supabase.from('app_settings').select('key, value').eq('key', 'residences')
+      .then(({ data }) => { if (data && data[0]) setResidences(JSON.parse(data[0].value)) })
+  }, [])
 
   async function fetchMembers() {
     setLoading(true)
@@ -179,7 +184,7 @@ export default function MembersModule({ session, permissions, onBack }) {
         )}
       </div>
 
-      {showForm && canEdit && <MemberForm member={editingMember} onSave={async form => { const res = await saveMember(form, editingMember?.id); if (!res.error) setShowForm(false); return res }} onClose={() => setShowForm(false)} />}
+      {showForm && canEdit && <MemberForm member={editingMember} residences={residences} setResidences={setResidences} onSave={async form => { const res = await saveMember(form, editingMember?.id); if (!res.error) setShowForm(false); return res }} onClose={() => setShowForm(false)} />}
       {historyMember && <HistoryModal member={historyMember} session={session} onRollback={rollbackTo} onClose={() => setHistoryMember(null)} />}
     </div>
   )
