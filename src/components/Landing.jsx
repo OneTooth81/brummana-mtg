@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import {
-  Users, BookOpen, BarChart2, LogOut, UserPlus, KeyRound,
+  Users, BookOpen, BarChart2, FileText, LogOut, UserPlus, KeyRound,
   LayoutDashboard, TrendingUp, TrendingDown, DollarSign,
   MessageCircle, X, Save, AlertCircle, CheckCircle
 } from 'lucide-react'
@@ -14,9 +14,10 @@ function fmtDay(s) {
 }
 
 const MODULES = [
-  { key: 'members',  title: 'Member Database',  icon: Users },
-  { key: 'accounts', title: 'Account Keeping',  icon: BookOpen },
-  { key: 'reports',  title: 'Reports',           icon: BarChart2 },
+  { key: 'members',  title: 'Member Database',    icon: Users },
+  { key: 'accounts', title: 'Account Keeping',    icon: BookOpen },
+  { key: 'reports',  title: 'Reports',             icon: BarChart2 },
+  { key: 'minutes',  title: 'Minutes of Meeting',  icon: FileText },
 ]
 
 // ── Change PIN Modal ───────────────────────────────────────────────────────────

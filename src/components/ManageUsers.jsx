@@ -7,6 +7,7 @@ const MODULES = [
   { key: 'members',  label: 'Member Database' },
   { key: 'accounts', label: 'Account Keeping' },
   { key: 'reports',  label: 'Reports' },
+  { key: 'minutes',  label: 'Minutes of Meeting' },
 ]
 const LEVELS = ['none', 'view', 'edit']
 const LEVEL_COLORS = {
@@ -64,6 +65,7 @@ export default function ManageUsers({ session, onBack }) {
       { username: name, module: 'members',  access_level: 'edit' },
       { username: name, module: 'accounts', access_level: 'none' },
       { username: name, module: 'reports',  access_level: 'view' },
+      { username: name, module: 'minutes',  access_level: 'edit' },
     ])
     setNewName(''); setNewPin('')
     setSaving(false)
