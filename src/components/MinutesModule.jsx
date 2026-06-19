@@ -149,9 +149,34 @@ function PreviewModal({ file, onClose }) {
   )
 }
 
+// ── Delete Confirm Modal ───────────────────────────────────────────────────────
+function DeleteConfirmModal({ count, onConfirm, onClose }) {
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+      <div className="bg-white w-full max-w-sm rounded-2xl p-6">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+            <Trash2 size={18} className="text-red-600" />
+          </div>
+          <h2 className="text-base font-bold">Delete {count === 1 ? 'file' : `${count} files`}?</h2>
+        </div>
+        <p className="text-sm text-stone-500 mb-5">
+          This will permanently remove {count === 1 ? 'this file' : 'these files'} from storage. This cannot be undone.
+        </p>
+        <div className="flex gap-2">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-lg border border-stone-300 text-stone-600 font-medium hover:bg-stone-50">Cancel</button>
+          <button onClick={onConfirm} className="flex-1 py-2.5 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700">
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Main Module ────────────────────────────────────────────────────────────────
 export default function MinutesModule({ session, permissions, onBack }) {
-  const canEdit = permissions['minutes'] === 'edit'
+  const canEdit = (permissions['minutes'] || 'edit') !== 'none'
   const isAdmin = session.username === ADMIN
 
   const [files, setFiles] = useState([])
@@ -160,6 +185,8 @@ export default function MinutesModule({ session, permissions, onBack }) {
   const [showUpload, setShowUpload] = useState(false)
   const [previewFile, setPreviewFile] = useState(null)
   const [downloading, setDownloading] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => { fetchFiles() }, [])
 
@@ -205,16 +232,23 @@ export default function MinutesModule({ session, permissions, onBack }) {
     if (f) setPreviewFile(f)
   }
 
-  async function handleDelete(file) {
-    await supabase.storage.from('meeting-minutes').remove([file.storage_path])
-    await supabase.from('meeting_minutes').delete().eq('id', file.id)
-    setSelected(prev => { const next = new Set(prev); next.delete(file.id); return next })
+  async function handleDeleteSelected() {
+    setDeleting(true)
+    const toDelete = files.filter(f => selected.has(f.id))
+    const paths = toDelete.map(f => f.storage_path)
+    const ids = toDelete.map(f => f.id)
+    await supabase.storage.from('meeting-minutes').remove(paths)
+    await supabase.from('meeting_minutes').delete().in('id', ids)
+    setSelected(new Set())
+    setShowDeleteConfirm(false)
+    setDeleting(false)
     fetchFiles()
   }
 
   const selCount = selected.size
   const canPreview = selCount === 1
   const canDownload = selCount >= 1
+  const canDelete = isAdmin && selCount >= 1
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-800">
@@ -254,6 +288,13 @@ export default function MinutesModule({ session, permissions, onBack }) {
               ${canDownload ? 'bg-violet-700 text-white hover:bg-violet-800' : 'bg-violet-200 text-violet-300 cursor-not-allowed'}`}>
             {downloading ? <><Loader size={15} className="animate-spin" /> Downloading…</> : <><Download size={15} /> Download{selCount > 1 ? ` (${selCount})` : ''}</>}
           </button>
+          {isAdmin && (
+            <button onClick={() => setShowDeleteConfirm(true)} disabled={!canDelete}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition
+                ${canDelete ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-red-100 text-red-300 cursor-not-allowed'}`}>
+              <Trash2 size={15} /> Delete{selCount > 1 ? ` (${selCount})` : ''}
+            </button>
+          )}
         </div>
 
         {/* File list */}
@@ -300,14 +341,7 @@ export default function MinutesModule({ session, permissions, onBack }) {
                   <span className="text-sm text-stone-500 truncate">{f.uploaded_by}</span>
                   <span className="text-sm text-stone-500">{fmtDate(f.uploaded_at)}</span>
                   <span className="text-sm text-stone-400">{fmtSize(f.file_size)}</span>
-                  <div onClick={e => e.stopPropagation()}>
-                    {isAdmin && (
-                      <button onClick={() => handleDelete(f)}
-                        className="p-1.5 rounded-lg text-stone-300 hover:text-red-500 hover:bg-red-50 transition">
-                        <Trash2 size={15} />
-                      </button>
-                    )}
-                  </div>
+                  <div />
                 </div>
               )
             })}
@@ -323,6 +357,13 @@ export default function MinutesModule({ session, permissions, onBack }) {
 
       {showUpload && <UploadModal session={session} onUploaded={fetchFiles} onClose={() => setShowUpload(false)} />}
       {previewFile && <PreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />}
+      {showDeleteConfirm && (
+        <DeleteConfirmModal
+          count={selCount}
+          onConfirm={handleDeleteSelected}
+          onClose={() => setShowDeleteConfirm(false)}
+        />
+      )}
     </div>
   )
 }
