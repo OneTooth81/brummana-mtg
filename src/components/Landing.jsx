@@ -63,7 +63,7 @@ export default function Landing({ session, permissions, onNavigate, onSignOut })
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  const accessible = MODULES.filter(m => permissions[m.key] && permissions[m.key] !== 'none')
+  const accessible = MODULES.filter(m => (permissions[m.key] || 'edit') !== 'none')
 
   useEffect(() => {
     async function fetchStats() {
