@@ -46,6 +46,20 @@ export default function MemberForm({ member, residences, setResidences, onSave, 
 
   const f = (key, val) => setForm(p => ({ ...p, [key]: val }))
 
+  function genFromAge(dob) {
+    if (!dob) return null
+    const age = calcAge(dob)
+    if (age === null) return null
+    if (age <= 21) return 'Youth'
+    if (age <= 60) return 'Adult'
+    return 'Senior'
+  }
+
+  function handleDobChange(val) {
+    const gen = genFromAge(val)
+    setForm(p => ({ ...p, dob: val, ...(gen ? { generation: gen } : {}) }))
+  }
+
   async function addResidence() {
     const val = newRes.trim()
     if (!val) { setResErr('Enter a name.'); return }
@@ -88,14 +102,21 @@ export default function MemberForm({ member, residences, setResidences, onSave, 
             {resErr && <p className="text-xs text-red-600 mt-1">{resErr}</p>}
           </div>
           <div><label className="text-sm font-medium text-stone-600">Date of birth</label>
-            <input type="date" value={form.dob} onChange={e => f('dob', e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-teal-500" />
+            <input type="date" value={form.dob} onChange={e => handleDobChange(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-teal-500" />
             {calcAge(form.dob) !== null && <p className="text-xs text-stone-400 mt-1">Age: {calcAge(form.dob)}</p>}</div>
-          <div><label className="text-sm font-medium text-stone-600">Generation</label>
+          <div>
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-stone-600">Generation</label>
+              {form.dob && genFromAge(form.dob) === form.generation && (
+                <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Auto-set · override below</span>
+              )}
+            </div>
             <div className="flex gap-2 mt-1">
               {GENERATIONS.map(g => (
                 <button key={g} onClick={() => f('generation', g)} className={`flex-1 py-2 rounded-lg border text-sm font-medium transition ${form.generation === g ? 'border-teal-600 bg-teal-50 text-teal-800' : 'border-stone-300 text-stone-500 hover:bg-stone-50'}`}>{g}</button>
               ))}
-            </div></div>
+            </div>
+          </div>
           <div><label className="text-sm font-medium text-stone-600 flex items-center gap-1.5"><MessageCircle size={14} /> Added to WhatsApp group?</label>
             <div className="flex gap-2 mt-1">
               <button onClick={() => f('in_group', true)} className={`flex-1 py-2 rounded-lg border text-sm font-medium transition ${form.in_group ? 'border-green-600 bg-green-50 text-green-700' : 'border-stone-300 text-stone-500 hover:bg-stone-50'}`}>Yes, in group</button>
