@@ -16,8 +16,8 @@ function fmtDay(s) {
 const MODULES = [
   { key: 'members',  title: 'Member Database',    icon: Users },
   { key: 'accounts', title: 'Account Keeping',    icon: BookOpen },
-  { key: 'reports',  title: 'Reports',             icon: BarChart2 },
-  { key: 'minutes',  title: 'Minutes of Meeting',  icon: FileText },
+  { key: 'minutes',  title: 'Minutes of Meeting', icon: FileText },
+  { key: 'reports',  title: 'Reports',            icon: BarChart2 },
 ]
 
 // ── Change PIN Modal ───────────────────────────────────────────────────────────
