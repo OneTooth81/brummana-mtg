@@ -90,9 +90,10 @@ export default function Landing({ session, permissions, onNavigate, onSignOut })
     return {
       total: m.length,
       inGroup: m.filter(x => x.in_group).length,
-      Youth:  m.filter(x => x.generation === 'Youth').length,
-      Adult:  m.filter(x => x.generation === 'Adult').length,
-      Senior: m.filter(x => x.generation === 'Senior').length,
+      Youth:   m.filter(x => x.generation === 'Youth').length,
+      Adult:   m.filter(x => x.generation === 'Adult').length,
+      Senior:  m.filter(x => x.generation === 'Senior').length,
+      Unknown: m.filter(x => x.generation === 'Unknown').length,
     }
   }, [stats])
 
@@ -232,7 +233,7 @@ export default function Landing({ session, permissions, onNavigate, onSignOut })
               </div>
 
               {/* Member stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5">
                 <div className="bg-white rounded-xl border border-stone-200 p-4">
                   <p className="text-xs font-medium text-stone-400 flex items-center gap-1.5"><Users size={12} /> Members</p>
                   <p className="text-2xl font-bold mt-1">{memberStats?.total}</p>
@@ -253,6 +254,11 @@ export default function Landing({ session, permissions, onNavigate, onSignOut })
                   <p className="text-2xl font-bold mt-1 text-amber-700">{memberStats?.Senior}</p>
                   <p className="text-xs text-amber-500 mt-0.5">{memberStats?.total ? Math.round(memberStats.Senior / memberStats.total * 100) : 0}% of total</p>
                 </div>
+                <div className="bg-stone-100 rounded-xl border border-stone-200 p-4">
+                  <p className="text-xs font-medium text-stone-500">Unknown</p>
+                  <p className="text-2xl font-bold mt-1 text-stone-600">{memberStats?.Unknown}</p>
+                  <p className="text-xs text-stone-400 mt-0.5">{memberStats?.total ? Math.round(memberStats.Unknown / memberStats.total * 100) : 0}% of total</p>
+                </div>
               </div>
 
               {/* Two-col panels */}
@@ -262,9 +268,10 @@ export default function Landing({ session, permissions, onNavigate, onSignOut })
                 <div className="bg-white rounded-xl border border-stone-200 p-4">
                   <h3 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-4">Members by generation</h3>
                   {[
-                    { label: 'Youth',  count: memberStats?.Youth,  bar: 'bg-emerald-500' },
-                    { label: 'Adult',  count: memberStats?.Adult,  bar: 'bg-sky-500' },
-                    { label: 'Senior', count: memberStats?.Senior, bar: 'bg-amber-400' },
+                    { label: 'Youth',   count: memberStats?.Youth,   bar: 'bg-emerald-500' },
+                    { label: 'Adult',   count: memberStats?.Adult,   bar: 'bg-sky-500' },
+                    { label: 'Senior',  count: memberStats?.Senior,  bar: 'bg-amber-400' },
+                    { label: 'Unknown', count: memberStats?.Unknown, bar: 'bg-stone-400' },
                   ].map(({ label, count, bar }) => (
                     <div key={label} className="flex items-center gap-3 mb-3">
                       <span className="text-xs text-stone-500 w-11 shrink-0">{label}</span>

@@ -113,7 +113,13 @@ export default function MemberForm({ member, residences, setResidences, onSave, 
             </div>
             <div className="flex gap-2 mt-1">
               {GENERATIONS.map(g => (
-                <button key={g} onClick={() => f('generation', g)} className={`flex-1 py-2 rounded-lg border text-sm font-medium transition ${form.generation === g ? 'border-teal-600 bg-teal-50 text-teal-800' : 'border-stone-300 text-stone-500 hover:bg-stone-50'}`}>{g}</button>
+                <button key={g} onClick={() => f('generation', g)}
+                  className={`flex-1 py-2 rounded-lg border text-xs font-medium transition leading-tight px-1
+                    ${form.generation === g
+                      ? g === 'Unknown' ? 'border-stone-500 bg-stone-100 text-stone-700' : 'border-teal-600 bg-teal-50 text-teal-800'
+                      : 'border-stone-300 text-stone-500 hover:bg-stone-50'}`}>
+                  {g === 'Unknown' ? 'Unknown / date missing' : g}
+                </button>
               ))}
             </div>
           </div>

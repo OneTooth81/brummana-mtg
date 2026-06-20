@@ -61,14 +61,14 @@ function validateRow(row, headers, mapping) {
   const email = getVal(row, headers, mapping, 'email')
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.push('Invalid email')
   const gen = getVal(row, headers, mapping, 'generation')
-  if (gen && !['youth', 'adult', 'senior'].includes(gen.toLowerCase())) warnings.push('Generation not recognised — will default to Adult')
+  if (gen && !['youth', 'adult', 'senior', 'unknown'].includes(gen.toLowerCase())) warnings.push('Generation not recognised — will default to Adult')
   if (!getVal(row, headers, mapping, 'phone')) warnings.push('No phone number')
   return { errors, warnings }
 }
 
 function normaliseGeneration(v) {
   if (!v) return 'Adult'
-  const m = ['Youth', 'Adult', 'Senior'].find(g => g.toLowerCase() === v.toLowerCase())
+  const m = ['Youth', 'Adult', 'Senior', 'Unknown'].find(g => g.toLowerCase() === v.toLowerCase())
   return m || 'Adult'
 }
 

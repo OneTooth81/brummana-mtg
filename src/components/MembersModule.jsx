@@ -145,7 +145,7 @@ export default function MembersModule({ session, permissions, onBack }) {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 mb-6">
           <div className="bg-white rounded-xl border border-stone-200 p-4">
             <div className="flex items-center gap-2 text-stone-500 text-xs font-medium"><Users size={14} /> TOTAL</div>
             <div className="text-2xl font-bold mt-1">{counts.total}</div>
