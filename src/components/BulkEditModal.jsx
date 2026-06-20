@@ -91,11 +91,11 @@ export default function BulkEditModal({ members, residences, session, onSave, on
             <col style={{ width: '80px' }} />
           </colgroup>
 
-          <thead className="sticky top-0 z-10">
+          <thead className="sticky top-0 z-20">
             <tr className="bg-stone-100 border-b border-stone-200">
-              <th className="px-3 py-2.5 text-left text-xs font-semibold text-stone-400">#</th>
-              {FIELDS.map(f => (
-                <th key={f.key} className="px-2 py-2.5 text-left text-xs font-semibold text-stone-400">{f.label}</th>
+              <th className="px-3 py-2.5 text-left text-xs font-semibold text-stone-400 sticky left-0 z-30 bg-stone-100">#</th>
+              {FIELDS.map((f, fi) => (
+                <th key={f.key} className={`px-2 py-2.5 text-left text-xs font-semibold text-stone-400 ${fi === 0 ? 'sticky left-10 z-30 bg-stone-100' : ''}`}>{f.label}</th>
               ))}
               <th className="px-2 py-2.5 text-left text-xs font-semibold text-stone-400">Residence</th>
               <th className="px-2 py-2.5 text-left text-xs font-semibold text-stone-400">Generation</th>
@@ -106,14 +106,17 @@ export default function BulkEditModal({ members, residences, session, onSave, on
           <tbody>
             {rows.map((r, i) => {
               const dirty = dirtyIds.has(r.id)
+              const rowBg = dirty ? '#fffbeb' : ''
               return (
                 <tr key={r.id} className={dirty ? 'bg-amber-50' : 'hover:bg-stone-50'}>
-                  <td className={`text-center text-xs text-stone-400 border-b border-stone-100 px-1 py-0.5 ${dirty ? 'border-l-2 border-l-amber-400' : ''}`}>
+                  <td className={`text-center text-xs text-stone-400 border-b border-stone-100 px-1 py-0.5 sticky left-0 z-10 ${dirty ? 'border-l-2 border-l-amber-400' : ''}`}
+                    style={{ background: rowBg || 'white' }}>
                     {i + 1}
                   </td>
 
-                  {FIELDS.map(f => (
-                    <td key={f.key} className="border-b border-stone-100 px-1 py-0.5">
+                  {FIELDS.map((f, fi) => (
+                    <td key={f.key} className={`border-b border-stone-100 px-1 py-0.5 ${fi === 0 ? 'sticky z-10' : ''}`}
+                      style={fi === 0 ? { left: '40px', background: rowBg || 'white' } : {}}>
                       <input
                         value={r[f.key] || ''}
                         onChange={e => updateCell(r.id, f.key, e.target.value)}

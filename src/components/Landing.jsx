@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import {
   Users, BookOpen, BarChart2, FileText, LogOut, UserPlus, KeyRound,
   LayoutDashboard, TrendingUp, TrendingDown, DollarSign,
-  MessageCircle, X, Save, AlertCircle, CheckCircle
+  MessageCircle, X, Save, AlertCircle, CheckCircle, Menu, Leaf
 } from 'lucide-react'
 import { ADMIN } from '../constants'
 import { supabase } from '../supabase'
@@ -60,6 +60,7 @@ function ChangePinModal({ session, onClose }) {
 // ── Main Landing ───────────────────────────────────────────────────────────────
 export default function Landing({ session, permissions, onNavigate, onSignOut }) {
   const [showPin, setShowPin] = useState(false)
+  const [showDrawer, setShowDrawer] = useState(false)
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -173,30 +174,87 @@ export default function Landing({ session, permissions, onNavigate, onSignOut })
       </aside>
 
       {/* ── Mobile top bar ── */}
-      <div className="sm:hidden fixed top-0 inset-x-0 bg-teal-900 z-10 flex items-center justify-between px-4 py-3">
-        <p className="text-sm font-medium text-white">Brummana MTG</p>
-        <div className="flex gap-1">
-          {accessible.map(m => {
-            const Icon = m.icon
-            return (
-              <button key={m.key} onClick={() => onNavigate(m.key)} className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10">
-                <Icon size={18} />
-              </button>
-            )
-          })}
-          {session.username === ADMIN && (
-            <button onClick={() => onNavigate('manage')} className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10">
-              <UserPlus size={18} />
-            </button>
-          )}
-          <button onClick={() => setShowPin(true)} className="p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10">
-            <KeyRound size={18} />
+      <div className="sm:hidden fixed top-0 inset-x-0 bg-teal-900 z-20 flex items-center justify-between px-4 py-3">
+        <div className="flex items-center gap-3">
+          <button onClick={() => setShowDrawer(true)} className="p-1.5 rounded-lg text-white/80 hover:bg-white/10">
+            <Menu size={22} />
           </button>
-          <button onClick={onSignOut} className="p-2 rounded-lg text-red-300/70 hover:text-red-300 hover:bg-white/10">
-            <LogOut size={18} />
-          </button>
+          <p className="text-sm font-semibold text-white">Brummana MTG</p>
+        </div>
+        <div className="w-8 h-8 rounded-full bg-teal-700 flex items-center justify-center text-xs font-semibold text-white">
+          {session.username.slice(0, 2).toUpperCase()}
         </div>
       </div>
+
+      {/* ── Mobile drawer overlay ── */}
+      {showDrawer && (
+        <div className="sm:hidden fixed inset-0 z-30 flex">
+          <div className="w-72 bg-teal-900 flex flex-col h-full overflow-y-auto">
+            <div className="flex items-center gap-3 px-4 py-4 border-b border-white/10">
+              <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                <Leaf size={16} className="text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white leading-tight">Brummana MTG</p>
+                <p className="text-xs text-white/40">Meet the Generations</p>
+              </div>
+              <button onClick={() => setShowDrawer(false)} className="ml-auto p-1.5 rounded-lg text-white/60 hover:bg-white/10">
+                <X size={18} />
+              </button>
+            </div>
+
+            <nav className="flex-1 px-2 py-4 space-y-0.5">
+              <p className="text-xs font-semibold text-white/30 uppercase tracking-wider px-3 mb-2">Modules</p>
+              <button onClick={() => setShowDrawer(false)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm bg-white/10 text-white font-medium">
+                <LayoutDashboard size={17} /> Dashboard
+              </button>
+              {accessible.map(m => {
+                const Icon = m.icon
+                return (
+                  <button key={m.key} onClick={() => { onNavigate(m.key); setShowDrawer(false) }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors text-left">
+                    <Icon size={17} />
+                    <span className="flex-1">{m.title}</span>
+                    {(permissions[m.key] || 'edit') === 'view' && <span className="text-xs text-white/30 bg-white/10 px-1.5 py-0.5 rounded">View</span>}
+                  </button>
+                )
+              })}
+              {session.username === ADMIN && (
+                <>
+                  <p className="text-xs font-semibold text-white/30 uppercase tracking-wider px-3 mt-5 mb-2">Admin</p>
+                  <button onClick={() => { onNavigate('manage'); setShowDrawer(false) }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                    <UserPlus size={17} /> Manage sign-ins
+                  </button>
+                </>
+              )}
+            </nav>
+
+            <div className="border-t border-white/10 px-2 py-3">
+              <div className="flex items-center gap-2.5 px-3 py-2 mb-1">
+                <div className="w-8 h-8 rounded-full bg-teal-600 flex items-center justify-center text-xs font-semibold text-white shrink-0">
+                  {session.username.slice(0, 2).toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-white truncate">{session.username}</p>
+                  <p className="text-xs text-white/35">{session.username === ADMIN ? 'Administrator' : 'Member'}</p>
+                </div>
+              </div>
+              <button onClick={() => { setShowPin(true); setShowDrawer(false) }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/65 hover:bg-white/10 hover:text-white transition-colors">
+                <KeyRound size={17} /> Change PIN
+              </button>
+              <button onClick={onSignOut}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-300/70 hover:bg-white/10 hover:text-red-300 transition-colors">
+                <LogOut size={17} /> Sign out
+              </button>
+            </div>
+          </div>
+          {/* Tap outside to close */}
+          <div className="flex-1 bg-black/50" onClick={() => setShowDrawer(false)} />
+        </div>
+      )}
 
       {/* ── Main content ── */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">

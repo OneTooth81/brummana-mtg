@@ -306,46 +306,83 @@ export default function MinutesModule({ session, permissions, onBack }) {
             No minutes uploaded yet.
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
-            {/* Table header */}
-            <div className="grid gap-3 px-4 py-2.5 border-b border-stone-200 bg-stone-50 text-xs font-semibold text-stone-400 uppercase tracking-wide"
-              style={{ gridTemplateColumns: '36px 1fr 130px 110px 70px 40px' }}>
-              <input type="checkbox" className="w-4 h-4 accent-violet-600 cursor-pointer"
-                checked={selCount === files.length && files.length > 0}
-                onChange={toggleAll} />
-              <span>File name</span>
-              <span>Uploaded by</span>
-              <span>Date</span>
-              <span>Size</span>
-              <span></span>
+          <>
+            {/* Mobile card list */}
+            <div className="sm:hidden space-y-2">
+              {files.map(f => {
+                const isSel = selected.has(f.id)
+                return (
+                  <div key={f.id}
+                    onClick={() => toggleSelect(f.id)}
+                    className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border cursor-pointer transition
+                      ${isSel ? 'bg-violet-50 border-violet-200' : 'bg-white border-stone-200 hover:bg-stone-50'}`}>
+                    <input type="checkbox" className="w-4 h-4 accent-violet-600 shrink-0"
+                      checked={isSel} onChange={() => toggleSelect(f.id)}
+                      onClick={e => e.stopPropagation()} />
+                    <div className="w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
+                      <FileText size={18} className="text-red-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate text-stone-800">{f.file_name}</p>
+                      <p className="text-xs text-stone-400 mt-0.5">
+                        {f.uploaded_by} · {fmtDate(f.uploaded_at)} · {fmtSize(f.file_size)}
+                      </p>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
 
-            {/* Rows */}
-            {files.map(f => {
-              const isSel = selected.has(f.id)
-              return (
-                <div key={f.id}
-                  onClick={() => toggleSelect(f.id)}
-                  className={`grid gap-3 px-4 py-3 border-b border-stone-100 last:border-0 items-center cursor-pointer transition
-                    ${isSel ? 'bg-violet-50' : 'hover:bg-stone-50'}`}
-                  style={{ gridTemplateColumns: '36px 1fr 130px 110px 70px 40px' }}>
-                  <input type="checkbox" className="w-4 h-4 accent-violet-600 cursor-pointer"
-                    checked={isSel} onChange={() => toggleSelect(f.id)}
-                    onClick={e => e.stopPropagation()} />
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
-                      <FileText size={16} className="text-red-500" />
+            {/* Desktop table */}
+            <div className="hidden sm:block bg-white rounded-xl border border-stone-200 overflow-hidden">
+              {/* Table header */}
+              <div className="grid gap-3 px-4 py-2.5 border-b border-stone-200 bg-stone-50 text-xs font-semibold text-stone-400 uppercase tracking-wide"
+                style={{ gridTemplateColumns: '36px 1fr 130px 110px 70px 40px' }}>
+                <input type="checkbox" className="w-4 h-4 accent-violet-600 cursor-pointer"
+                  checked={selCount === files.length && files.length > 0}
+                  onChange={toggleAll} />
+                <span>File name</span>
+                <span>Uploaded by</span>
+                <span>Date</span>
+                <span>Size</span>
+                <span></span>
+              </div>
+
+              {/* Rows */}
+              {files.map(f => {
+                const isSel = selected.has(f.id)
+                return (
+                  <div key={f.id}
+                    onClick={() => toggleSelect(f.id)}
+                    className={`grid gap-3 px-4 py-3 border-b border-stone-100 last:border-0 items-center cursor-pointer transition
+                      ${isSel ? 'bg-violet-50' : 'hover:bg-stone-50'}`}
+                    style={{ gridTemplateColumns: '36px 1fr 130px 110px 70px 40px' }}>
+                    <input type="checkbox" className="w-4 h-4 accent-violet-600 cursor-pointer"
+                      checked={isSel} onChange={() => toggleSelect(f.id)}
+                      onClick={e => e.stopPropagation()} />
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
+                        <FileText size={16} className="text-red-500" />
+                      </div>
+                      <span className="text-sm font-medium truncate">{f.file_name}</span>
                     </div>
-                    <span className="text-sm font-medium truncate">{f.file_name}</span>
+                    <span className="text-sm text-stone-500 truncate">{f.uploaded_by}</span>
+                    <span className="text-sm text-stone-500">{fmtDate(f.uploaded_at)}</span>
+                    <span className="text-sm text-stone-400">{fmtSize(f.file_size)}</span>
+                    <div />
                   </div>
-                  <span className="text-sm text-stone-500 truncate">{f.uploaded_by}</span>
-                  <span className="text-sm text-stone-500">{fmtDate(f.uploaded_at)}</span>
-                  <span className="text-sm text-stone-400">{fmtSize(f.file_size)}</span>
-                  <div />
-                </div>
-              )
-            })}
-          </div>
+                )
+              })}
+            </div>
+
+            {/* Mobile select-all */}
+            <div className="sm:hidden mt-2 flex items-center justify-between px-1">
+              <button onClick={toggleAll} className="text-xs text-violet-600 font-medium">
+                {selCount === files.length ? 'Deselect all' : 'Select all'}
+              </button>
+              <span className="text-xs text-stone-400">{files.length} file{files.length !== 1 ? 's' : ''}</span>
+            </div>
+          </>
         )}
 
         {selCount > 1 && (

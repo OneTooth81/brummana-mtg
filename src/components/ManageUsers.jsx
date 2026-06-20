@@ -117,7 +117,7 @@ export default function ManageUsers({ session, onBack }) {
                     )}
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {MODULES.map(mod => (
                     <div key={mod.key}>
                       <div className="text-xs text-stone-400 font-medium mb-1">{mod.label}</div>

@@ -415,21 +415,23 @@ export default function AccountsModule({ session, permissions, onBack }) {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="bg-white rounded-xl border border-stone-200 p-4">
-            <div className="flex items-center gap-1.5 text-emerald-600 text-xs font-medium"><TrendingUp size={13} /> INCOME</div>
-            <div className="text-xl font-bold mt-1">${fmt(totals.inc)}</div>
-            <div className="text-xs text-stone-400 mt-0.5">{fmt(totals.incLBP, 0)} LBP</div>
-          </div>
-          <div className="bg-white rounded-xl border border-stone-200 p-4">
-            <div className="flex items-center gap-1.5 text-red-500 text-xs font-medium"><TrendingDown size={13} /> EXPENSES</div>
-            <div className="text-xl font-bold mt-1">${fmt(totals.exp)}</div>
-            <div className="text-xs text-stone-400 mt-0.5">{fmt(totals.expLBP, 0)} LBP</div>
-          </div>
+        <div className="mb-6 space-y-3">
           <div className={`rounded-xl border p-4 ${totals.cash >= 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'}`}>
             <div className={`flex items-center gap-1.5 text-xs font-medium ${totals.cash >= 0 ? 'text-emerald-700' : 'text-red-600'}`}><DollarSign size={13} /> CASH ON HAND</div>
-            <div className="text-xl font-bold mt-1">${fmt(totals.cash)}</div>
+            <div className="text-2xl font-bold mt-1">${fmt(totals.cash)}</div>
             <div className="text-xs text-stone-400 mt-0.5">{fmt(totals.cashLBP, 0)} LBP</div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-white rounded-xl border border-stone-200 p-4">
+              <div className="flex items-center gap-1.5 text-emerald-600 text-xs font-medium"><TrendingUp size={13} /> INCOME</div>
+              <div className="text-xl font-bold mt-1">${fmt(totals.inc)}</div>
+              <div className="text-xs text-stone-400 mt-0.5">{fmt(totals.incLBP, 0)} LBP</div>
+            </div>
+            <div className="bg-white rounded-xl border border-stone-200 p-4">
+              <div className="flex items-center gap-1.5 text-red-500 text-xs font-medium"><TrendingDown size={13} /> EXPENSES</div>
+              <div className="text-xl font-bold mt-1">${fmt(totals.exp)}</div>
+              <div className="text-xs text-stone-400 mt-0.5">{fmt(totals.expLBP, 0)} LBP</div>
+            </div>
           </div>
         </div>
 
