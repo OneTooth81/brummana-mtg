@@ -8,7 +8,7 @@ const WA_LINK = 'https://chat.whatsapp.com/HD7e6RrmKRtIB5izFaE9Vk'
 export default function JoinPage() {
   const [residences, setResidences] = useState([...RESIDENCES])
   const [form, setForm] = useState({
-    name: '', dob: '', phone: '', countryCode: '+961', residence: '', email: '', occupation: '',
+    name: '', dob: '', phone: '', countryCode: '+961', residence: 'Brummana', email: '', occupation: '',
   })
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
@@ -194,7 +194,6 @@ export default function JoinPage() {
               value={form.residence}
               onChange={e => f('residence', e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-stone-300 bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 text-base">
-              <option value="">Select your area…</option>
               {[...residences].sort((a, b) => a.localeCompare(b)).map(r => (
                 <option key={r} value={r}>{r}</option>
               ))}
