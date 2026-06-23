@@ -8,7 +8,7 @@ const WA_LINK = 'https://chat.whatsapp.com/HD7e6RrmKRtIB5izFaE9Vk'
 export default function JoinPage() {
   const [residences, setResidences] = useState([...RESIDENCES])
   const [form, setForm] = useState({
-    name: '', dob: '', phone: '', residence: '', email: '', occupation: '',
+    name: '', dob: '', phone: '', countryCode: '+961', residence: '', email: '', occupation: '',
   })
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
@@ -27,7 +27,7 @@ export default function JoinPage() {
   function validate() {
     const e = {}
     if (!form.name.trim())  e.name  = 'Full name is required.'
-    if (!form.phone.trim()) e.phone = 'Phone number is required.'
+    if (!form.phone.trim()) e.phone = 'Phone number is required (digits only after the country code).'
     if (!form.dob)          e.dob   = 'Date of birth is required.'
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Enter a valid email address.'
     return e
@@ -41,7 +41,7 @@ export default function JoinPage() {
     const { error } = await supabase.from('pending_members').insert({
       name:        form.name.trim(),
       dob:         form.dob,
-      phone:       form.phone.trim(),
+      phone:       `${form.countryCode} ${form.phone.trim()}`,
       residence:   form.residence || null,
       email:       form.email.trim() || null,
       occupation:  form.occupation.trim() || null,
@@ -138,13 +138,40 @@ export default function JoinPage() {
           {/* Phone */}
           <div>
             <label className="block text-sm font-medium text-stone-700 mb-1">Phone number *</label>
-            <input
-              value={form.phone}
-              onChange={e => f('phone', e.target.value)}
-              placeholder="+961 xx xxx xxx"
-              type="tel"
-              inputMode="tel"
-              className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-teal-500 text-base ${errors.phone ? 'border-red-400 bg-red-50' : 'border-stone-300'}`} />
+            <div className={`flex rounded-xl border overflow-hidden focus-within:ring-2 focus-within:ring-teal-500 ${errors.phone ? 'border-red-400 bg-red-50' : 'border-stone-300 bg-white'}`}>
+              <select
+                value={form.countryCode}
+                onChange={e => f('countryCode', e.target.value)}
+                className="border-none bg-stone-100 px-3 py-3 text-sm font-medium text-stone-700 focus:outline-none border-r border-stone-300 shrink-0 cursor-pointer">
+                <option value="+961">🇱🇧 +961</option>
+                <option value="+1">🇺🇸 +1</option>
+                <option value="+44">🇬🇧 +44</option>
+                <option value="+33">🇫🇷 +33</option>
+                <option value="+49">🇩🇪 +49</option>
+                <option value="+61">🇦🇺 +61</option>
+                <option value="+55">🇧🇷 +55</option>
+                <option value="+52">🇲🇽 +52</option>
+                <option value="+971">🇦🇪 +971</option>
+                <option value="+966">🇸🇦 +966</option>
+                <option value="+965">🇰🇼 +965</option>
+                <option value="+974">🇶🇦 +974</option>
+                <option value="+973">🇧🇭 +973</option>
+                <option value="+968">🇴🇲 +968</option>
+                <option value="+962">🇯🇴 +962</option>
+                <option value="+20">🇪🇬 +20</option>
+                <option value="+90">🇹🇷 +90</option>
+                <option value="+30">🇬🇷 +30</option>
+                <option value="+39">🇮🇹 +39</option>
+                <option value="+34">🇪🇸 +34</option>
+              </select>
+              <input
+                value={form.phone}
+                onChange={e => f('phone', e.target.value.replace(/[^\d\s]/g, ''))}
+                placeholder="3 123 456"
+                type="tel"
+                inputMode="tel"
+                className="flex-1 px-4 py-3 text-base bg-transparent focus:outline-none" />
+            </div>
             {errors.phone && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle size={12} /> {errors.phone}</p>}
           </div>
 
