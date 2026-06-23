@@ -7,6 +7,8 @@ import AccountsModule from './components/AccountsModule'
 import ReportsModule from './components/ReportsModule'
 import ManageUsers from './components/ManageUsers'
 import MinutesModule from './components/MinutesModule'
+import JoinPage from './components/JoinPage'
+import PendingModule from './components/PendingModule'
 import { ADMIN } from './constants'
 
 export default function App() {
@@ -35,13 +37,17 @@ export default function App() {
     setScreen('login')
   }
 
-  if (screen === 'login')   return <Login onLogin={handleLogin} />
-  if (screen === 'landing') return <Landing session={session} permissions={permissions} onNavigate={setScreen} onSignOut={handleSignOut} />
-  if (screen === 'members') return <MembersModule session={session} permissions={permissions} onBack={() => setScreen('landing')} />
+  // Public join page — no auth needed
+  if (window.location.pathname === '/join') return <JoinPage />
+
+  if (screen === 'login')    return <Login onLogin={handleLogin} />
+  if (screen === 'landing')  return <Landing session={session} permissions={permissions} onNavigate={setScreen} onSignOut={handleSignOut} />
+  if (screen === 'members')  return <MembersModule session={session} permissions={permissions} onBack={() => setScreen('landing')} />
   if (screen === 'accounts') return <AccountsModule session={session} permissions={permissions} onBack={() => setScreen('landing')} />
-  if (screen === 'reports') return <ReportsModule session={session} permissions={permissions} onBack={() => setScreen('landing')} />
-  if (screen === 'minutes') return <MinutesModule session={session} permissions={permissions} onBack={() => setScreen('landing')} />
-  if (screen === 'manage')  return <ManageUsers session={session} onBack={() => setScreen('landing')} />
+  if (screen === 'reports')  return <ReportsModule session={session} permissions={permissions} onBack={() => setScreen('landing')} />
+  if (screen === 'minutes')  return <MinutesModule session={session} permissions={permissions} onBack={() => setScreen('landing')} />
+  if (screen === 'manage')   return <ManageUsers session={session} onBack={() => setScreen('landing')} />
+  if (screen === 'pending')  return <PendingModule session={session} onBack={() => setScreen('landing')} />
 
   return null
 }

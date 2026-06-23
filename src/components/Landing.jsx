@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import {
   Users, BookOpen, BarChart2, FileText, LogOut, UserPlus, KeyRound,
   LayoutDashboard, TrendingUp, TrendingDown, DollarSign,
-  MessageCircle, X, Save, AlertCircle, CheckCircle, Menu, Leaf
+  MessageCircle, X, Save, AlertCircle, CheckCircle, Menu, Leaf, Clock
 } from 'lucide-react'
 import { ADMIN } from '../constants'
 import { supabase } from '../supabase'
@@ -63,6 +63,7 @@ export default function Landing({ session, permissions, onNavigate, onSignOut })
   const [showDrawer, setShowDrawer] = useState(false)
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [pendingCount, setPendingCount] = useState(0)
 
   const accessible = MODULES.filter(m => (permissions[m.key] || 'edit') !== 'none')
 
@@ -83,6 +84,10 @@ export default function Landing({ session, permissions, onNavigate, onSignOut })
       setLoading(false)
     }
     fetchStats()
+    if (session.username === ADMIN) {
+      supabase.from('pending_members').select('id', { count: 'exact', head: true })
+        .then(({ count }) => setPendingCount(count || 0))
+    }
   }, [])
 
   const memberStats = useMemo(() => {
@@ -144,6 +149,14 @@ export default function Landing({ session, permissions, onNavigate, onSignOut })
           {session.username === ADMIN && (
             <>
               <p className="text-xs font-medium text-white/30 uppercase tracking-wider px-2 mt-4 mb-2">Admin</p>
+              <button onClick={() => onNavigate('pending')}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/65 hover:bg-white/10 hover:text-white transition-colors text-left">
+                <Clock size={16} />
+                <span className="flex-1">Pending members</span>
+                {pendingCount > 0 && (
+                  <span className="text-xs bg-amber-400 text-amber-900 font-bold px-1.5 py-0.5 rounded-full">{pendingCount}</span>
+                )}
+              </button>
               <button onClick={() => onNavigate('manage')}
                 className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/65 hover:bg-white/10 hover:text-white transition-colors text-left">
                 <UserPlus size={16} /> Manage sign-ins
@@ -223,6 +236,14 @@ export default function Landing({ session, permissions, onNavigate, onSignOut })
               {session.username === ADMIN && (
                 <>
                   <p className="text-xs font-semibold text-white/30 uppercase tracking-wider px-3 mt-5 mb-2">Admin</p>
+                  <button onClick={() => { onNavigate('pending'); setShowDrawer(false) }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors">
+                    <Clock size={17} />
+                    <span className="flex-1 text-left">Pending members</span>
+                    {pendingCount > 0 && (
+                      <span className="text-xs bg-amber-400 text-amber-900 font-bold px-1.5 py-0.5 rounded-full">{pendingCount}</span>
+                    )}
+                  </button>
                   <button onClick={() => { onNavigate('manage'); setShowDrawer(false) }}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors">
                     <UserPlus size={17} /> Manage sign-ins
