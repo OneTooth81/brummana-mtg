@@ -1,3 +1,4 @@
+import { createGoogleContact } from '../googleContacts'
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import { RESIDENCES } from '../constants'
@@ -88,6 +89,19 @@ function ApproveModal({ member, session, onApproved, onRejected, onClose }) {
     if (insertErr) { setError(insertErr.message); setSaving(false); return }
     await supabase.from('pending_members').delete().eq('id', member.id)
     setSaving(false)
+	// Try to create Google Contact (non-blocking — failure shouldn't stop 	approval)
+	try {
+  		await createGoogleContact({
+    		name:       member.name,
+   		 phone:      member.phone,
+    		email:      member.email,
+    		dob:        member.dob,
+    		occupation: member.occupation,
+  		})
+		} catch (e) {
+  		console.warn('Google Contact creation failed:', e.message)
+  		// Approval still succeeds even if contact fails
+	}
     onApproved()
   }
 
