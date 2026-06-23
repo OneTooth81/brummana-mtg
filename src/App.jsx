@@ -47,7 +47,7 @@ export default function App() {
   if (screen === 'reports')  return <ReportsModule session={session} permissions={permissions} onBack={() => setScreen('landing')} />
   if (screen === 'minutes')  return <MinutesModule session={session} permissions={permissions} onBack={() => setScreen('landing')} />
   if (screen === 'manage')   return <ManageUsers session={session} onBack={() => setScreen('landing')} />
-  if (screen === 'pending')  return <PendingModule session={session} onBack={() => setScreen('landing')} />
+  if (screen === 'pending')  return <PendingModule session={session} permissions={permissions} onBack={() => setScreen('landing')} />
 
   return null
 }

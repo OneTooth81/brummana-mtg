@@ -3,7 +3,8 @@ import { supabase } from '../supabase'
 import { RESIDENCES } from '../constants'
 import {
   ArrowLeft, Clock, CheckCircle, X, Trash2,
-  User, Phone, Mail, Briefcase, MapPin, Calendar, AlertCircle, Loader
+  User, Phone, Mail, Briefcase, MapPin, Calendar,
+  AlertCircle, Loader, AlertTriangle
 } from 'lucide-react'
 
 function fmtDate(iso) {
@@ -29,13 +30,45 @@ function inferGeneration(dob) {
   return 'Senior'
 }
 
+function normalizePhone(p) {
+  return (p || '').replace(/\D/g, '')
+}
+
+// ── Comparison row helper ──────────────────────────────────────────────────────
+function DiffRow({ label, existing, incoming }) {
+  const diff = String(existing || '') !== String(incoming || '')
+  return (
+    <div className="grid gap-2 py-2 border-b border-stone-100 last:border-0 items-start"
+      style={{ gridTemplateColumns: '80px 1fr 1fr' }}>
+      <span className="text-xs text-stone-400 pt-0.5">{label}</span>
+      <span className="text-sm text-stone-700">{existing || <span className="text-stone-300 italic">—</span>}</span>
+      <span className={`text-sm rounded px-1.5 py-0.5 -mx-1.5 ${diff ? 'bg-amber-100 text-amber-800 font-medium' : 'text-stone-700'}`}>
+        {incoming || <span className="text-stone-300 italic">—</span>}
+      </span>
+    </div>
+  )
+}
+
 // ── Approve Modal ──────────────────────────────────────────────────────────────
-function ApproveModal({ member, session, onApproved, onClose }) {
+function ApproveModal({ member, session, onApproved, onRejected, onClose }) {
   const generation = inferGeneration(member.dob)
   const age = calcAge(member.dob)
   const [inGroup, setInGroup] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [dupLoading, setDupLoading] = useState(true)
+  const [dupMember, setDupMember] = useState(null)
+
+  useEffect(() => {
+    const normalized = normalizePhone(member.phone)
+    supabase.from('members').select('*').then(({ data }) => {
+      if (data) {
+        const dup = data.find(m => normalizePhone(m.phone) === normalized)
+        setDupMember(dup || null)
+      }
+      setDupLoading(false)
+    })
+  }, [])
 
   async function handleApprove() {
     setSaving(true)
@@ -58,67 +91,134 @@ function ApproveModal({ member, session, onApproved, onClose }) {
     onApproved()
   }
 
+  async function handleRejectDuplicate() {
+    await supabase.from('pending_members').delete().eq('id', member.id)
+    onRejected()
+  }
+
+  const isDup = !dupLoading && dupMember
+
   return (
     <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50">
-      <div className="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl p-6">
+      <div className={`bg-white w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl p-6 max-h-[90vh] overflow-y-auto ${isDup ? 'border-2 border-amber-400' : ''}`}>
+
+        {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-bold flex items-center gap-2">
-            <CheckCircle size={18} className="text-emerald-600" /> Approve member
+            {isDup
+              ? <><AlertTriangle size={18} className="text-amber-500" /> Duplicate phone detected</>
+              : <><CheckCircle size={18} className="text-emerald-600" /> Approve member</>}
           </h2>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-stone-100"><X size={20} /></button>
         </div>
 
-        <div className="bg-stone-50 rounded-xl px-4 py-3 mb-4">
-          <p className="text-sm font-semibold text-stone-800">{member.name}</p>
-          <p className="text-xs text-stone-500 mt-0.5">
-            {member.phone}{member.dob ? ` · DOB ${fmtDate(member.dob)}` : ''}
-            {age !== null ? ` · ${age} yrs` : ''}
-          </p>
-        </div>
-
-        {/* Auto-assigned generation */}
-        <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3 mb-4">
-          <User size={16} className="text-emerald-700 shrink-0" />
-          <div>
-            <p className="text-xs font-medium text-emerald-700">Generation — auto-assigned</p>
-            <p className="text-sm font-semibold text-emerald-900">
-              {generation}
-              {age !== null && <span className="text-xs font-normal text-emerald-600 ml-1">(age {age})</span>}
-            </p>
+        {/* Loading state */}
+        {dupLoading && (
+          <div className="flex items-center gap-2 text-sm text-stone-400 py-4">
+            <Loader size={15} className="animate-spin" /> Checking for duplicates…
           </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-stone-700 mb-2">Add to WhatsApp group?</label>
-          <div className="flex gap-2">
-            <button onClick={() => setInGroup(true)}
-              className={`flex-1 py-2 rounded-lg border text-sm font-medium transition
-                ${inGroup ? 'border-emerald-600 bg-emerald-50 text-emerald-800' : 'border-stone-300 text-stone-500 hover:bg-stone-50'}`}>
-              Yes
-            </button>
-            <button onClick={() => setInGroup(false)}
-              className={`flex-1 py-2 rounded-lg border text-sm font-medium transition
-                ${!inGroup ? 'border-stone-500 bg-stone-100 text-stone-700' : 'border-stone-300 text-stone-500 hover:bg-stone-50'}`}>
-              No
-            </button>
-          </div>
-        </div>
-
-        {error && (
-          <p className="text-sm text-red-600 flex items-center gap-1.5 mt-3">
-            <AlertCircle size={14} /> {error}
-          </p>
         )}
 
-        <div className="flex gap-2 mt-5">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-lg border border-stone-300 text-stone-600 font-medium hover:bg-stone-50">
-            Cancel
-          </button>
-          <button onClick={handleApprove} disabled={saving}
-            className="flex-1 py-2.5 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-700 disabled:opacity-60 flex items-center justify-center gap-1.5">
-            {saving ? <><Loader size={15} className="animate-spin" /> Approving…</> : <><CheckCircle size={15} /> Approve</>}
-          </button>
-        </div>
+        {!dupLoading && (
+          <>
+            {/* Duplicate warning */}
+            {isDup && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-4">
+                <p className="text-sm text-amber-800">
+                  The number <span className="font-semibold">{member.phone}</span> already exists in the member database. Review the differences below.
+                </p>
+              </div>
+            )}
+
+            {/* Summary card */}
+            <div className="bg-stone-50 rounded-xl px-4 py-3 mb-4">
+              <p className="text-sm font-semibold text-stone-800">{member.name}</p>
+              <p className="text-xs text-stone-500 mt-0.5">
+                {member.phone}{member.dob ? ` · DOB ${fmtDate(member.dob)}` : ''}
+                {age !== null ? ` · ${age} yrs` : ''}
+              </p>
+            </div>
+
+            {/* Comparison table (duplicate only) */}
+            {isDup && (
+              <div className="border border-stone-200 rounded-xl overflow-hidden mb-4">
+                <div className="grid gap-2 px-4 py-2 bg-stone-50 border-b border-stone-200"
+                  style={{ gridTemplateColumns: '80px 1fr 1fr' }}>
+                  <span className="text-xs font-semibold text-stone-400"></span>
+                  <span className="text-xs font-semibold text-stone-500">Existing member</span>
+                  <span className="text-xs font-semibold text-amber-600">New submission</span>
+                </div>
+                <div className="px-4">
+                  <DiffRow label="Name"       existing={dupMember.name}       incoming={member.name} />
+                  <DiffRow label="Phone"      existing={dupMember.phone}      incoming={member.phone} />
+                  <DiffRow label="DOB"        existing={fmtDate(dupMember.dob)} incoming={fmtDate(member.dob)} />
+                  <DiffRow label="Residence"  existing={dupMember.residence}  incoming={member.residence} />
+                  <DiffRow label="Email"      existing={dupMember.email}      incoming={member.email} />
+                  <DiffRow label="Occupation" existing={dupMember.occupation} incoming={member.occupation} />
+                </div>
+              </div>
+            )}
+
+            {/* Auto-assigned generation (non-dup only) */}
+            {!isDup && (
+              <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3 mb-4">
+                <User size={16} className="text-emerald-700 shrink-0" />
+                <div>
+                  <p className="text-xs font-medium text-emerald-700">Generation — auto-assigned</p>
+                  <p className="text-sm font-semibold text-emerald-900">
+                    {generation}
+                    {age !== null && <span className="text-xs font-normal text-emerald-600 ml-1">(age {age})</span>}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* WhatsApp group (non-dup only) */}
+            {!isDup && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-stone-700 mb-2">Add to WhatsApp group?</label>
+                <div className="flex gap-2">
+                  <button onClick={() => setInGroup(true)}
+                    className={`flex-1 py-2 rounded-lg border text-sm font-medium transition
+                      ${inGroup ? 'border-emerald-600 bg-emerald-50 text-emerald-800' : 'border-stone-300 text-stone-500 hover:bg-stone-50'}`}>
+                    Yes
+                  </button>
+                  <button onClick={() => setInGroup(false)}
+                    className={`flex-1 py-2 rounded-lg border text-sm font-medium transition
+                      ${!inGroup ? 'border-stone-500 bg-stone-100 text-stone-700' : 'border-stone-300 text-stone-500 hover:bg-stone-50'}`}>
+                    No
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {error && (
+              <p className="text-sm text-red-600 flex items-center gap-1.5 mb-3">
+                <AlertCircle size={14} /> {error}
+              </p>
+            )}
+
+            {/* Actions */}
+            <div className="flex gap-2">
+              <button onClick={onClose}
+                className="flex-1 py-2.5 rounded-lg border border-stone-300 text-stone-600 font-medium hover:bg-stone-50 text-sm">
+                Cancel
+              </button>
+              {isDup && (
+                <button onClick={handleRejectDuplicate}
+                  className="flex-1 py-2.5 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 text-sm">
+                  Reject (duplicate)
+                </button>
+              )}
+              <button onClick={handleApprove} disabled={saving}
+                className="flex-1 py-2.5 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-700 disabled:opacity-60 flex items-center justify-center gap-1.5 text-sm">
+                {saving
+                  ? <><Loader size={14} className="animate-spin" /> Approving…</>
+                  : <><CheckCircle size={14} /> {isDup ? 'Approve anyway' : 'Approve'}</>}
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )
@@ -158,7 +258,9 @@ function RejectModal({ member, onConfirm, onClose }) {
 }
 
 // ── Main Module ────────────────────────────────────────────────────────────────
-export default function PendingModule({ session, onBack }) {
+export default function PendingModule({ session, permissions, onBack }) {
+  const canEdit = (permissions?.['pending'] || 'edit') === 'edit'
+
   const [pending, setPending] = useState([])
   const [loading, setLoading] = useState(true)
   const [approving, setApproving] = useState(null)
@@ -189,6 +291,7 @@ export default function PendingModule({ session, onBack }) {
   }
 
   function onRejected() {
+    setApproving(null)
     setRejecting(null)
     fetchPending()
     showToast('Submission removed.')
@@ -206,6 +309,7 @@ export default function PendingModule({ session, onBack }) {
             <h1 className="text-2xl font-bold">Pending Members</h1>
             <p className="text-amber-100 text-sm">
               {pending.length} submission{pending.length !== 1 ? 's' : ''} awaiting approval
+              {!canEdit && <span className="ml-2 bg-white/20 text-white text-xs px-2 py-0.5 rounded-full">View only</span>}
             </p>
           </div>
         </div>
@@ -213,23 +317,23 @@ export default function PendingModule({ session, onBack }) {
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
 
-        {/* Join link banner */}
-        <div className="bg-white border border-stone-200 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center shrink-0">
-            <User size={15} className="text-teal-700" />
+        {/* Join link banner (edit users only) */}
+        {canEdit && (
+          <div className="bg-white border border-stone-200 rounded-xl px-4 py-3 mb-5 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center shrink-0">
+              <User size={15} className="text-teal-700" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-stone-500">Shareable joining link</p>
+              <p className="text-sm font-mono text-stone-700 truncate">{window.location.origin}/join</p>
+            </div>
+            <button
+              onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/join`); showToast('Link copied!') }}
+              className="text-xs px-3 py-1.5 rounded-lg bg-teal-700 text-white font-medium hover:bg-teal-800 transition shrink-0">
+              Copy link
+            </button>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-stone-500">Shareable joining link</p>
-            <p className="text-sm font-mono text-stone-700 truncate">
-              {window.location.origin}/join
-            </p>
-          </div>
-          <button
-            onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/join`); showToast('Link copied!') }}
-            className="text-xs px-3 py-1.5 rounded-lg bg-teal-700 text-white font-medium hover:bg-teal-800 transition shrink-0">
-            Copy link
-          </button>
-        </div>
+        )}
 
         {/* List */}
         {loading ? (
@@ -254,12 +358,9 @@ export default function PendingModule({ session, onBack }) {
                       <p className="text-xs text-stone-400 mt-0.5">Submitted {fmtDateTime(m.submitted_at)}</p>
                     </div>
                   </div>
-                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full font-medium shrink-0">
-                    Pending
-                  </span>
+                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full font-medium shrink-0">Pending</span>
                 </div>
 
-                {/* Detail grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
                   <div className="flex items-center gap-2 text-sm text-stone-600">
                     <Phone size={13} className="text-stone-400 shrink-0" />
@@ -294,19 +395,18 @@ export default function PendingModule({ session, onBack }) {
                   )}
                 </div>
 
-                {/* Actions */}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setRejecting(m)}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-red-200 text-red-600 text-sm font-medium hover:bg-red-50 transition">
-                    <Trash2 size={14} /> Reject
-                  </button>
-                  <button
-                    onClick={() => setApproving(m)}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition ml-auto">
-                    <CheckCircle size={14} /> Approve
-                  </button>
-                </div>
+                {canEdit && (
+                  <div className="flex gap-2">
+                    <button onClick={() => setRejecting(m)}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg border border-red-200 text-red-600 text-sm font-medium hover:bg-red-50 transition">
+                      <Trash2 size={14} /> Reject
+                    </button>
+                    <button onClick={() => setApproving(m)}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition ml-auto">
+                      <CheckCircle size={14} /> Approve
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -325,6 +425,7 @@ export default function PendingModule({ session, onBack }) {
           member={approving}
           session={session}
           onApproved={onApproved}
+          onRejected={onRejected}
           onClose={() => setApproving(null)} />
       )}
       {rejecting && (

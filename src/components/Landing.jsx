@@ -17,6 +17,7 @@ const MODULES = [
   { key: 'members',  title: 'Member Database',    icon: Users },
   { key: 'accounts', title: 'Account Keeping',    icon: BookOpen },
   { key: 'minutes',  title: 'Minutes of Meeting', icon: FileText },
+  { key: 'pending',  title: 'Pending Members',    icon: Clock },
   { key: 'reports',  title: 'Reports',            icon: BarChart2 },
 ]
 
@@ -84,7 +85,7 @@ export default function Landing({ session, permissions, onNavigate, onSignOut })
       setLoading(false)
     }
     fetchStats()
-    if (session.username === ADMIN) {
+    if ((permissions['pending'] || 'edit') !== 'none') {
       supabase.from('pending_members').select('id', { count: 'exact', head: true })
         .then(({ count }) => setPendingCount(count || 0))
     }
@@ -141,6 +142,9 @@ export default function Landing({ session, permissions, onNavigate, onSignOut })
                 className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/65 hover:bg-white/10 hover:text-white transition-colors text-left">
                 <Icon size={16} />
                 <span className="flex-1 truncate">{m.title}</span>
+                {m.key === 'pending' && pendingCount > 0 && !isView && (
+                  <span className="text-xs bg-amber-400 text-amber-900 font-bold px-1.5 py-0.5 rounded-full">{pendingCount}</span>
+                )}
                 {isView && <span className="text-xs text-white/35 bg-white/10 px-1.5 py-0.5 rounded">View</span>}
               </button>
             )
@@ -149,14 +153,6 @@ export default function Landing({ session, permissions, onNavigate, onSignOut })
           {session.username === ADMIN && (
             <>
               <p className="text-xs font-medium text-white/30 uppercase tracking-wider px-2 mt-4 mb-2">Admin</p>
-              <button onClick={() => onNavigate('pending')}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/65 hover:bg-white/10 hover:text-white transition-colors text-left">
-                <Clock size={16} />
-                <span className="flex-1">Pending members</span>
-                {pendingCount > 0 && (
-                  <span className="text-xs bg-amber-400 text-amber-900 font-bold px-1.5 py-0.5 rounded-full">{pendingCount}</span>
-                )}
-              </button>
               <button onClick={() => onNavigate('manage')}
                 className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/65 hover:bg-white/10 hover:text-white transition-colors text-left">
                 <UserPlus size={16} /> Manage sign-ins
@@ -224,26 +220,22 @@ export default function Landing({ session, permissions, onNavigate, onSignOut })
               </button>
               {accessible.map(m => {
                 const Icon = m.icon
+                const isView = (permissions[m.key] || 'edit') === 'view'
                 return (
                   <button key={m.key} onClick={() => { onNavigate(m.key); setShowDrawer(false) }}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors text-left">
                     <Icon size={17} />
                     <span className="flex-1">{m.title}</span>
-                    {(permissions[m.key] || 'edit') === 'view' && <span className="text-xs text-white/30 bg-white/10 px-1.5 py-0.5 rounded">View</span>}
+                    {m.key === 'pending' && pendingCount > 0 && !isView && (
+                      <span className="text-xs bg-amber-400 text-amber-900 font-bold px-1.5 py-0.5 rounded-full">{pendingCount}</span>
+                    )}
+                    {isView && <span className="text-xs text-white/30 bg-white/10 px-1.5 py-0.5 rounded">View</span>}
                   </button>
                 )
               })}
               {session.username === ADMIN && (
                 <>
                   <p className="text-xs font-semibold text-white/30 uppercase tracking-wider px-3 mt-5 mb-2">Admin</p>
-                  <button onClick={() => { onNavigate('pending'); setShowDrawer(false) }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors">
-                    <Clock size={17} />
-                    <span className="flex-1 text-left">Pending members</span>
-                    {pendingCount > 0 && (
-                      <span className="text-xs bg-amber-400 text-amber-900 font-bold px-1.5 py-0.5 rounded-full">{pendingCount}</span>
-                    )}
-                  </button>
                   <button onClick={() => { onNavigate('manage'); setShowDrawer(false) }}
                     className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors">
                     <UserPlus size={17} /> Manage sign-ins

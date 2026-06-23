@@ -6,8 +6,9 @@ import { ADMIN } from '../constants'
 const MODULES = [
   { key: 'members',  label: 'Member Database' },
   { key: 'accounts', label: 'Account Keeping' },
-  { key: 'reports',  label: 'Reports' },
   { key: 'minutes',  label: 'Minutes of Meeting' },
+  { key: 'pending',  label: 'Pending Members' },
+  { key: 'reports',  label: 'Reports' },
 ]
 const LEVELS = ['none', 'view', 'edit']
 const LEVEL_COLORS = {
@@ -64,8 +65,9 @@ export default function ManageUsers({ session, onBack }) {
     await supabase.from('user_permissions').insert([
       { username: name, module: 'members',  access_level: 'edit' },
       { username: name, module: 'accounts', access_level: 'none' },
-      { username: name, module: 'reports',  access_level: 'view' },
       { username: name, module: 'minutes',  access_level: 'edit' },
+      { username: name, module: 'pending',  access_level: 'edit' },
+      { username: name, module: 'reports',  access_level: 'view' },
     ])
     setNewName(''); setNewPin('')
     setSaving(false)
@@ -117,7 +119,7 @@ export default function ManageUsers({ session, onBack }) {
                     )}
                   </div>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                   {MODULES.map(mod => (
                     <div key={mod.key}>
                       <div className="text-xs text-stone-400 font-medium mb-1">{mod.label}</div>
