@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
-import { GENERATIONS, RESIDENCES } from '../constants'
+import { RESIDENCES } from '../constants'
 import {
   ArrowLeft, Clock, CheckCircle, X, Trash2,
   User, Phone, Mail, Briefcase, MapPin, Calendar, AlertCircle, Loader
@@ -31,7 +31,8 @@ function inferGeneration(dob) {
 
 // ── Approve Modal ──────────────────────────────────────────────────────────────
 function ApproveModal({ member, session, onApproved, onClose }) {
-  const [generation, setGeneration] = useState(inferGeneration(member.dob))
+  const generation = inferGeneration(member.dob)
+  const age = calcAge(member.dob)
   const [inGroup, setInGroup] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -40,16 +41,16 @@ function ApproveModal({ member, session, onApproved, onClose }) {
     setSaving(true)
     setError('')
     const { error: insertErr } = await supabase.from('members').insert({
-      name:         member.name,
-      phone:        member.phone,
-      email:        member.email || null,
-      occupation:   member.occupation || null,
-      residence:    member.residence || RESIDENCES[0],
-      dob:          member.dob,
+      name:        member.name,
+      phone:       member.phone,
+      email:       member.email || null,
+      occupation:  member.occupation || null,
+      residence:   member.residence || RESIDENCES[0],
+      dob:         member.dob,
       generation,
-      in_group:     inGroup,
-      created_by:   session.username,
-      created_at:   new Date().toISOString(),
+      in_group:    inGroup,
+      created_by:  session.username,
+      created_at:  new Date().toISOString(),
     })
     if (insertErr) { setError(insertErr.message); setSaving(false); return }
     await supabase.from('pending_members').delete().eq('id', member.id)
@@ -71,38 +72,35 @@ function ApproveModal({ member, session, onApproved, onClose }) {
           <p className="text-sm font-semibold text-stone-800">{member.name}</p>
           <p className="text-xs text-stone-500 mt-0.5">
             {member.phone}{member.dob ? ` · DOB ${fmtDate(member.dob)}` : ''}
-            {calcAge(member.dob) !== null ? ` · ${calcAge(member.dob)} yrs` : ''}
+            {age !== null ? ` · ${age} yrs` : ''}
           </p>
         </div>
 
-        <div className="space-y-4">
+        {/* Auto-assigned generation */}
+        <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3 mb-4">
+          <User size={16} className="text-emerald-700 shrink-0" />
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-2">Generation</label>
-            <div className="flex gap-2 flex-wrap">
-              {GENERATIONS.filter(g => g !== 'Unknown').map(g => (
-                <button key={g} onClick={() => setGeneration(g)}
-                  className={`px-4 py-2 rounded-lg border text-sm font-medium transition
-                    ${generation === g ? 'border-teal-600 bg-teal-50 text-teal-800' : 'border-stone-300 text-stone-500 hover:bg-stone-50'}`}>
-                  {g}
-                </button>
-              ))}
-            </div>
+            <p className="text-xs font-medium text-emerald-700">Generation — auto-assigned</p>
+            <p className="text-sm font-semibold text-emerald-900">
+              {generation}
+              {age !== null && <span className="text-xs font-normal text-emerald-600 ml-1">(age {age})</span>}
+            </p>
           </div>
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-stone-700 mb-2">Add to WhatsApp group?</label>
-            <div className="flex gap-2">
-              <button onClick={() => setInGroup(true)}
-                className={`flex-1 py-2 rounded-lg border text-sm font-medium transition
-                  ${inGroup ? 'border-emerald-600 bg-emerald-50 text-emerald-800' : 'border-stone-300 text-stone-500 hover:bg-stone-50'}`}>
-                Yes
-              </button>
-              <button onClick={() => setInGroup(false)}
-                className={`flex-1 py-2 rounded-lg border text-sm font-medium transition
-                  ${!inGroup ? 'border-stone-500 bg-stone-100 text-stone-700' : 'border-stone-300 text-stone-500 hover:bg-stone-50'}`}>
-                No
-              </button>
-            </div>
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-2">Add to WhatsApp group?</label>
+          <div className="flex gap-2">
+            <button onClick={() => setInGroup(true)}
+              className={`flex-1 py-2 rounded-lg border text-sm font-medium transition
+                ${inGroup ? 'border-emerald-600 bg-emerald-50 text-emerald-800' : 'border-stone-300 text-stone-500 hover:bg-stone-50'}`}>
+              Yes
+            </button>
+            <button onClick={() => setInGroup(false)}
+              className={`flex-1 py-2 rounded-lg border text-sm font-medium transition
+                ${!inGroup ? 'border-stone-500 bg-stone-100 text-stone-700' : 'border-stone-300 text-stone-500 hover:bg-stone-50'}`}>
+              No
+            </button>
           </div>
         </div>
 
