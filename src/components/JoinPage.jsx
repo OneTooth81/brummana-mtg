@@ -8,7 +8,7 @@ const WA_LINK = 'https://chat.whatsapp.com/HD7e6RrmKRtIB5izFaE9Vk'
 export default function JoinPage() {
   const [residences, setResidences] = useState([...RESIDENCES])
   const [form, setForm] = useState({
-    name: '', dob: '', phone: '', countryCode: '+961', residence: 'Brummana', email: '', occupation: '',
+    name: '', dob: '', phone: '', countryCode: '+961', residence: 'Brummana', email: '', occupation: '', from_brummana: false,
   })
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
@@ -39,13 +39,14 @@ export default function JoinPage() {
     if (Object.keys(errs).length) { setErrors(errs); return }
     setSubmitting(true)
     const { error } = await supabase.from('pending_members').insert({
-      name:        form.name.trim(),
-      dob:         form.dob,
-      phone:       `${form.countryCode} ${form.phone.trim()}`,
-      residence:   form.residence || null,
-      email:       form.email.trim() || null,
-      occupation:  form.occupation.trim() || null,
-      submitted_at: new Date().toISOString(),
+      name:          form.name.trim(),
+      dob:           form.dob,
+      phone:         `${form.countryCode} ${form.phone.trim()}`,
+      residence:     form.residence || null,
+      email:         form.email.trim() || null,
+      occupation:    form.occupation.trim() || null,
+      from_brummana: form.from_brummana,
+      submitted_at:  new Date().toISOString(),
     })
     setSubmitting(false)
     if (error) { setErrors({ submit: error.message }); return }
@@ -222,6 +223,21 @@ export default function JoinPage() {
               onChange={e => f('occupation', e.target.value)}
               placeholder="Your job or profession"
               className="w-full px-4 py-3 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-teal-500 text-base" />
+          </div>
+
+          {/* From Brummana */}
+          <div>
+            <label className="block text-sm font-medium text-stone-700 mb-2">Born or related to Brummana?</label>
+            <div className="flex gap-3">
+              <button type="button" onClick={() => f('from_brummana', true)}
+                className={`flex-1 py-3 rounded-xl border text-sm font-medium transition ${form.from_brummana ? 'border-teal-600 bg-teal-50 text-teal-700' : 'border-stone-300 text-stone-500 hover:bg-stone-50'}`}>
+                Yes
+              </button>
+              <button type="button" onClick={() => f('from_brummana', false)}
+                className={`flex-1 py-3 rounded-xl border text-sm font-medium transition ${!form.from_brummana ? 'border-stone-500 bg-stone-100 text-stone-700' : 'border-stone-300 text-stone-500 hover:bg-stone-50'}`}>
+                No
+              </button>
+            </div>
           </div>
 
           {errors.submit && (

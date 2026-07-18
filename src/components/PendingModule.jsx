@@ -75,16 +75,17 @@ function ApproveModal({ member, session, onApproved, onRejected, onClose }) {
     setSaving(true)
     setError('')
     const { error: insertErr } = await supabase.from('members').insert({
-      name:        member.name,
-      phone:       member.phone,
-      email:       member.email || null,
-      occupation:  member.occupation || null,
-      residence:   member.residence || RESIDENCES[0],
-      dob:         member.dob,
+      name:          member.name,
+      phone:         member.phone,
+      email:         member.email || null,
+      occupation:    member.occupation || null,
+      residence:     member.residence || RESIDENCES[0],
+      dob:           member.dob,
       generation,
-      in_group:    inGroup,
-      created_by:  session.username,
-      created_at:  new Date().toISOString(),
+      in_group:      inGroup,
+      from_brummana: member.from_brummana || false,
+      created_by:    session.username,
+      created_at:    new Date().toISOString(),
     })
     if (insertErr) { setError(insertErr.message); setSaving(false); return }
     await supabase.from('pending_members').delete().eq('id', member.id)
