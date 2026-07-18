@@ -24,7 +24,7 @@ export default function MemberForm({ member, residences, setResidences, onSave, 
     dob: member?.dob || '',
     generation: member?.generation || 'Adult',
     in_group: member?.in_group || false,
-    from_brummana: member?.from_brummana || false,
+    from_brummana: member?.from_brummana ?? true,
     notes: member?.notes || '',
   })
   const [error, setError] = useState('')

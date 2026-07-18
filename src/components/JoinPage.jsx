@@ -8,7 +8,7 @@ const WA_LINK = 'https://chat.whatsapp.com/HD7e6RrmKRtIB5izFaE9Vk'
 export default function JoinPage() {
   const [residences, setResidences] = useState([...RESIDENCES])
   const [form, setForm] = useState({
-    name: '', dob: '', phone: '', countryCode: '+961', residence: 'Brummana', email: '', occupation: '', from_brummana: false,
+    name: '', dob: '', phone: '', countryCode: '+961', residence: 'Brummana', email: '', occupation: '', from_brummana: true,
   })
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
