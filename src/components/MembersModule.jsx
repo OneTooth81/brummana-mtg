@@ -60,7 +60,11 @@ export default function MembersModule({ session, permissions, onBack }) {
   }, [members, search, genFilter, creatorFilter, groupFilter])
 
   const counts = useMemo(() => {
-    const c = { total: members.length, inGroup: members.filter(m => m.in_group).length }
+    const c = {
+      total:     members.length,
+      inGroup:   members.filter(m => m.in_group).length,
+      brummana:  members.filter(m => m.from_brummana || (m.residence || '').toLowerCase() === 'brummana').length,
+    }
     GENERATIONS.forEach(g => (c[g] = members.filter(m => m.generation === g).length))
     return c
   }, [members])
@@ -164,7 +168,7 @@ export default function MembersModule({ session, permissions, onBack }) {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6">
-        <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-7 gap-3 mb-6">
           <div className="bg-white rounded-xl border border-stone-200 p-4">
             <div className="flex items-center gap-2 text-stone-500 text-xs font-medium"><Users size={14} /> TOTAL</div>
             <div className="text-2xl font-bold mt-1">{counts.total}</div>
@@ -178,6 +182,10 @@ export default function MembersModule({ session, permissions, onBack }) {
           <div className="bg-white rounded-xl border border-stone-200 p-4">
             <div className="flex items-center gap-1.5 text-stone-500 text-xs font-medium"><MessageCircle size={13} /> IN GROUP</div>
             <div className="text-2xl font-bold mt-1">{counts.inGroup}</div>
+          </div>
+          <div className="bg-white rounded-xl border border-teal-300 p-4">
+            <div className="text-teal-600 text-xs font-medium">FROM / IN BRUMMANA</div>
+            <div className="text-2xl font-bold mt-1">{counts.brummana} <span className="text-sm font-normal text-stone-400">/ {counts.total}</span></div>
           </div>
         </div>
 
