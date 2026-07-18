@@ -113,11 +113,14 @@ export default function MembersModule({ session, permissions, onBack }) {
       await supabase.from('members').update({
         name: row.name,
         phone: row.phone,
-        email: row.email,
-        occupation: row.occupation,
+        email: row.email || null,
+        occupation: row.occupation || null,
         residence: row.residence,
         generation: row.generation,
         in_group: row.in_group,
+        dob: row.dob || null,
+        from_brummana: row.from_brummana ?? false,
+        notes: row.notes || null,
         last_edited_by: session.username,
         last_edited_at: new Date().toISOString(),
       }).eq('id', row.id)

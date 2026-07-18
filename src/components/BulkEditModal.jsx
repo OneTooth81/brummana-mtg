@@ -17,7 +17,7 @@ export default function BulkEditModal({ members, residences, session, onSave, on
     return new Set(
       rows.filter(r => {
         const o = originalMap[r.id]
-        return ['name', 'phone', 'email', 'occupation', 'residence', 'generation', 'in_group']
+        return ['name', 'phone', 'email', 'occupation', 'residence', 'generation', 'in_group', 'dob', 'from_brummana', 'notes']
           .some(k => String(r[k] ?? '') !== String(o[k] ?? ''))
       }).map(r => r.id)
     )
@@ -82,13 +82,16 @@ export default function BulkEditModal({ members, residences, session, onSave, on
 
       {/* Table */}
       <div className="flex-1 overflow-auto">
-        <table className="border-collapse text-sm" style={{ tableLayout: 'fixed', minWidth: '900px', width: '100%' }}>
+        <table className="border-collapse text-sm" style={{ tableLayout: 'fixed', minWidth: '1280px', width: '100%' }}>
           <colgroup>
             <col style={{ width: '40px' }} />
             {FIELDS.map(f => <col key={f.key} style={{ width: f.width }} />)}
             <col style={{ width: '120px' }} />
             <col style={{ width: '110px' }} />
             <col style={{ width: '80px' }} />
+            <col style={{ width: '120px' }} />
+            <col style={{ width: '100px' }} />
+            <col style={{ width: '160px' }} />
           </colgroup>
 
           <thead className="sticky top-0 z-20">
@@ -100,6 +103,9 @@ export default function BulkEditModal({ members, residences, session, onSave, on
               <th className="px-2 py-2.5 text-left text-xs font-semibold text-stone-400">Residence</th>
               <th className="px-2 py-2.5 text-left text-xs font-semibold text-stone-400">Generation</th>
               <th className="px-2 py-2.5 text-left text-xs font-semibold text-stone-400">In group</th>
+              <th className="px-2 py-2.5 text-left text-xs font-semibold text-teal-600">Date of birth</th>
+              <th className="px-2 py-2.5 text-left text-xs font-semibold text-teal-600">From Brummana</th>
+              <th className="px-2 py-2.5 text-left text-xs font-semibold text-teal-600">Notes</th>
             </tr>
           </thead>
 
@@ -155,6 +161,33 @@ export default function BulkEditModal({ members, residences, session, onSave, on
                       <option>Yes</option>
                       <option>No</option>
                     </select>
+                  </td>
+
+                  <td className="border-b border-stone-100 px-1 py-0.5">
+                    <input
+                      type="date"
+                      value={r.dob || ''}
+                      onChange={e => updateCell(r.id, 'dob', e.target.value)}
+                      className="w-full px-2 py-1.5 text-sm bg-transparent rounded focus:outline-none focus:ring-1 focus:ring-teal-500 focus:bg-white"
+                    />
+                  </td>
+
+                  <td className="border-b border-stone-100 px-1 py-0.5">
+                    <select
+                      value={r.from_brummana ? 'Yes' : 'No'}
+                      onChange={e => updateCell(r.id, 'from_brummana', e.target.value === 'Yes')}
+                      className="w-full px-2 py-1.5 text-sm bg-transparent rounded focus:outline-none focus:ring-1 focus:ring-teal-500 focus:bg-white">
+                      <option>Yes</option>
+                      <option>No</option>
+                    </select>
+                  </td>
+
+                  <td className="border-b border-stone-100 px-1 py-0.5">
+                    <input
+                      value={r.notes || ''}
+                      onChange={e => updateCell(r.id, 'notes', e.target.value)}
+                      className="w-full px-2 py-1.5 text-sm bg-transparent rounded focus:outline-none focus:ring-1 focus:ring-teal-500 focus:bg-white"
+                    />
                   </td>
                 </tr>
               )
