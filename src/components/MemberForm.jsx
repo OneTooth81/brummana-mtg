@@ -24,6 +24,7 @@ export default function MemberForm({ member, residences, setResidences, onSave, 
     dob: member?.dob || '',
     generation: member?.generation || 'Adult',
     in_group: member?.in_group || false,
+    from_brummana: member?.from_brummana || false,
     notes: member?.notes || '',
   })
   const [error, setError] = useState('')
@@ -127,6 +128,11 @@ export default function MemberForm({ member, residences, setResidences, onSave, 
             <div className="flex gap-2 mt-1">
               <button onClick={() => f('in_group', true)} className={`flex-1 py-2 rounded-lg border text-sm font-medium transition ${form.in_group ? 'border-green-600 bg-green-50 text-green-700' : 'border-stone-300 text-stone-500 hover:bg-stone-50'}`}>Yes, in group</button>
               <button onClick={() => f('in_group', false)} className={`flex-1 py-2 rounded-lg border text-sm font-medium transition ${!form.in_group ? 'border-stone-500 bg-stone-100 text-stone-700' : 'border-stone-300 text-stone-500 hover:bg-stone-50'}`}>Not yet</button>
+            </div></div>
+          <div><label className="text-sm font-medium text-stone-600">Born or related to Brummana?</label>
+            <div className="flex gap-2 mt-1">
+              <button onClick={() => f('from_brummana', true)} className={`flex-1 py-2 rounded-lg border text-sm font-medium transition ${form.from_brummana ? 'border-teal-600 bg-teal-50 text-teal-700' : 'border-stone-300 text-stone-500 hover:bg-stone-50'}`}>Yes</button>
+              <button onClick={() => f('from_brummana', false)} className={`flex-1 py-2 rounded-lg border text-sm font-medium transition ${!form.from_brummana ? 'border-stone-500 bg-stone-100 text-stone-700' : 'border-stone-300 text-stone-500 hover:bg-stone-50'}`}>No</button>
             </div></div>
           <div><label className="text-sm font-medium text-stone-600">Notes / interests</label>
             <textarea value={form.notes} onChange={e => f('notes', e.target.value)} rows={2} className="w-full mt-1 px-3 py-2 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none" placeholder="Helpful for pairing across generations" /></div>

@@ -43,6 +43,9 @@ export default function MemberCard({ member: m, session, canEdit, onEdit, onDele
           ) : (
             <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-stone-100 text-stone-500 flex items-center gap-1"><MessageCircle size={11} /> Not in group</span>
           )}
+          {m.from_brummana && (
+            <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-teal-100 text-teal-700">From Brummana</span>
+          )}
         </div>
         <div className="text-sm text-stone-500 mt-1 flex flex-col gap-0.5">
           {m.occupation && <span className="flex items-center gap-1.5"><Briefcase size={13} /> {m.occupation}</span>}

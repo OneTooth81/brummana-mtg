@@ -142,8 +142,8 @@ export default function MembersModule({ session, permissions, onBack }) {
   }
 
   function exportCSV() {
-    const headers = ['Name','Phone','Email','Occupation','Residence','Date of Birth','Generation','In WhatsApp Group','Notes','Added By','Added On','Last Edited By']
-    const rows = members.map(m => [m.name, m.phone, m.email||'', m.occupation||'', m.residence, m.dob||'', m.generation, m.in_group?'Yes':'No', m.notes||'', m.created_by||'', fmtDate(m.created_at), m.last_edited_by||''].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','))
+    const headers = ['Name','Phone','Email','Occupation','Residence','Date of Birth','Generation','In WhatsApp Group','From Brummana','Notes','Added By','Added On','Last Edited By']
+    const rows = members.map(m => [m.name, m.phone, m.email||'', m.occupation||'', m.residence, m.dob||'', m.generation, m.in_group?'Yes':'No', m.from_brummana?'Yes':'No', m.notes||'', m.created_by||'', fmtDate(m.created_at), m.last_edited_by||''].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','))
     const csv = [headers.join(','), ...rows].join('\n')
     const blob = new Blob([csv], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
