@@ -71,7 +71,7 @@ export default function Landing({ session, permissions, onNavigate, onSignOut })
   useEffect(() => {
     async function fetchStats() {
       const [{ data: members }, { data: transactions }, { data: recentMembers }, { data: recentTxs }] = await Promise.all([
-        supabase.from('members').select('generation, in_group'),
+        supabase.from('members').select('generation, in_group, from_brummana, residence'),
         supabase.from('transactions').select('type, amount_usd, amount_lbp'),
         supabase.from('members').select('name, generation, created_by, created_at').order('created_at', { ascending: false }).limit(5),
         supabase.from('transactions').select('type, amount_usd, category, transaction_date').order('transaction_date', { ascending: false }).limit(5),
@@ -95,12 +95,13 @@ export default function Landing({ session, permissions, onNavigate, onSignOut })
     if (!stats) return null
     const m = stats.members
     return {
-      total: m.length,
-      inGroup: m.filter(x => x.in_group).length,
-      Youth:   m.filter(x => x.generation === 'Youth').length,
-      Adult:   m.filter(x => x.generation === 'Adult').length,
-      Senior:  m.filter(x => x.generation === 'Senior').length,
-      Unknown: m.filter(x => x.generation === 'Unknown').length,
+      total:    m.length,
+      inGroup:  m.filter(x => x.in_group).length,
+      brummana: m.filter(x => x.from_brummana || (x.residence || '').toLowerCase() === 'brummana').length,
+      Youth:    m.filter(x => x.generation === 'Youth').length,
+      Adult:    m.filter(x => x.generation === 'Adult').length,
+      Senior:   m.filter(x => x.generation === 'Senior').length,
+      Unknown:  m.filter(x => x.generation === 'Unknown').length,
     }
   }, [stats])
 
@@ -304,7 +305,7 @@ export default function Landing({ session, permissions, onNavigate, onSignOut })
               </div>
 
               {/* Member stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5">
+              <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 mb-5">
                 <div className="bg-white rounded-xl border border-stone-200 p-4">
                   <p className="text-xs font-medium text-stone-400 flex items-center gap-1.5"><Users size={12} /> Members</p>
                   <p className="text-2xl font-bold mt-1">{memberStats?.total}</p>
@@ -329,6 +330,11 @@ export default function Landing({ session, permissions, onNavigate, onSignOut })
                   <p className="text-xs font-medium text-stone-500">Unknown</p>
                   <p className="text-2xl font-bold mt-1 text-stone-600">{memberStats?.Unknown}</p>
                   <p className="text-xs text-stone-400 mt-0.5">{memberStats?.total ? Math.round(memberStats.Unknown / memberStats.total * 100) : 0}% of total</p>
+                </div>
+                <div className="bg-teal-50 rounded-xl border border-teal-300 p-4">
+                  <p className="text-xs font-medium text-teal-600">From / In Brummana</p>
+                  <p className="text-2xl font-bold mt-1 text-teal-700">{memberStats?.brummana} <span className="text-sm font-normal text-stone-400">/ {memberStats?.total}</span></p>
+                  <p className="text-xs text-teal-500 mt-0.5">{memberStats?.total ? Math.round(memberStats.brummana / memberStats.total * 100) : 0}% of total</p>
                 </div>
               </div>
 
