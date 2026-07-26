@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../supabase'
 import { RESIDENCES } from '../constants'
 import { Leaf, AlertCircle, CheckCircle, MessageCircle, ExternalLink, Calendar } from 'lucide-react'
@@ -27,6 +27,7 @@ export default function JoinPage() {
   })
   const [dobText, setDobText] = useState('')
   const [errors, setErrors] = useState({})
+  const dobPickerRef = useRef(null)
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
 
@@ -49,6 +50,11 @@ export default function JoinPage() {
   function handleDobPickerChange(iso) {
     f('dob', iso)
     setDobText(isoToDisplay(iso))
+  }
+
+  function openDobPicker() {
+    if (!dobPickerRef.current) return
+    try { dobPickerRef.current.showPicker() } catch { dobPickerRef.current.click() }
   }
 
   function validate() {
@@ -215,16 +221,20 @@ export default function JoinPage() {
                 maxLength={14}
                 className={`flex-1 px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-teal-500 text-base font-mono ${errors.dob ? 'border-red-400 bg-red-50' : 'border-stone-300'}`}
               />
-              <label htmlFor="dob-picker-input" className={`flex items-center justify-center w-12 rounded-xl border cursor-pointer transition hover:bg-stone-100 ${errors.dob ? 'border-red-400 bg-red-50' : 'border-stone-300 bg-stone-50'}`} title="Pick from calendar">
+              <button
+                type="button"
+                onClick={openDobPicker}
+                className={`flex items-center justify-center w-12 rounded-xl border cursor-pointer transition hover:bg-stone-100 ${errors.dob ? 'border-red-400 bg-red-50' : 'border-stone-300 bg-stone-50'}`}
+                title="Pick from calendar">
                 <Calendar size={20} className="text-stone-500" />
-              </label>
+              </button>
               <input
-                id="dob-picker-input"
+                ref={dobPickerRef}
                 type="date"
                 max={new Date().toISOString().split('T')[0]}
                 value={form.dob}
                 onChange={e => handleDobPickerChange(e.target.value)}
-                className="sr-only"
+                style={{ position: 'absolute', opacity: 0, width: 0, height: 0, pointerEvents: 'none' }}
               />
             </div>
             {errors.dob
