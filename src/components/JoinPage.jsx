@@ -1,15 +1,31 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import { RESIDENCES } from '../constants'
-import { Leaf, AlertCircle, CheckCircle, MessageCircle, ExternalLink } from 'lucide-react'
+import { Leaf, AlertCircle, CheckCircle, MessageCircle, ExternalLink, Calendar } from 'lucide-react'
 
 const WA_LINK = 'https://chat.whatsapp.com/HD7e6RrmKRtIB5izFaE9Vk'
+
+function padTwo(n) { return String(n).padStart(2, '0') }
+function isoToDisplay(iso) {
+  if (!iso) return ''
+  const [y, m, d] = iso.split('-')
+  return `${d} / ${m} / ${y}`
+}
+function parseDisplayDate(val) {
+  const clean = val.replace(/\s/g, '')
+  const m1 = clean.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/)
+  if (m1) return `${m1[3]}-${padTwo(m1[2])}-${padTwo(m1[1])}`
+  const m2 = clean.match(/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/)
+  if (m2) return `${m2[1]}-${padTwo(m2[2])}-${padTwo(m2[3])}`
+  return null
+}
 
 export default function JoinPage() {
   const [residences, setResidences] = useState([...RESIDENCES])
   const [form, setForm] = useState({
     name: '', dob: '', phone: '', countryCode: '+961', residence: 'Brummana', email: '', occupation: '', from_brummana: true,
   })
+  const [dobText, setDobText] = useState('')
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
@@ -22,6 +38,17 @@ export default function JoinPage() {
   function f(field, value) {
     setForm(p => ({ ...p, [field]: value }))
     setErrors(p => ({ ...p, [field]: '' }))
+  }
+
+  function handleDobTextChange(val) {
+    setDobText(val)
+    const iso = parseDisplayDate(val)
+    if (iso) { f('dob', iso) } else { f('dob', '') }
+  }
+
+  function handleDobPickerChange(iso) {
+    f('dob', iso)
+    setDobText(isoToDisplay(iso))
   }
 
   function validate() {
@@ -179,13 +206,33 @@ export default function JoinPage() {
           {/* Date of Birth */}
           <div>
             <label className="block text-sm font-medium text-stone-700 mb-1">Date of birth *</label>
-            <input
-              value={form.dob}
-              onChange={e => f('dob', e.target.value)}
-              type="date"
-              max={new Date().toISOString().split('T')[0]}
-              className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-teal-500 text-base ${errors.dob ? 'border-red-400 bg-red-50' : 'border-stone-300'}`} />
-            {errors.dob && <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle size={12} /> {errors.dob}</p>}
+            <div className="flex gap-2">
+              <input
+                value={dobText}
+                onChange={e => handleDobTextChange(e.target.value)}
+                type="text"
+                placeholder="DD / MM / YYYY"
+                maxLength={14}
+                className={`flex-1 px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-teal-500 text-base font-mono ${errors.dob ? 'border-red-400 bg-red-50' : 'border-stone-300'}`}
+              />
+              <label htmlFor="dob-picker-input" className={`flex items-center justify-center w-12 rounded-xl border cursor-pointer transition hover:bg-stone-100 ${errors.dob ? 'border-red-400 bg-red-50' : 'border-stone-300 bg-stone-50'}`} title="Pick from calendar">
+                <Calendar size={20} className="text-stone-500" />
+              </label>
+              <input
+                id="dob-picker-input"
+                type="date"
+                max={new Date().toISOString().split('T')[0]}
+                value={form.dob}
+                onChange={e => handleDobPickerChange(e.target.value)}
+                className="sr-only"
+              />
+            </div>
+            {errors.dob
+              ? <p className="text-xs text-red-500 mt-1 flex items-center gap-1"><AlertCircle size={12} /> {errors.dob}</p>
+              : form.dob
+                ? <p className="text-xs text-stone-400 mt-1">{new Date(form.dob + 'T00:00:00').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                : <p className="text-xs text-stone-400 mt-1">Type directly or tap <Calendar size={11} className="inline -mt-0.5" /> to pick from calendar</p>
+            }
           </div>
 
           {/* Residence */}
